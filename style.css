@@ -131,6 +131,30 @@ button {
   padding: 4px 18px calc(env(safe-area-inset-bottom, 0px) + 100px);
 }
 
+.segmented {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 3px;
+  margin-top: 12px;
+}
+.segment {
+  flex: 1;
+  padding: 8px 0;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: background var(--fast), color var(--fast), transform var(--fast);
+}
+.segment:active { transform: scale(0.96); }
+.segment.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--text);
+}
+
 .month-heading {
   font-size: 15px;
   font-weight: 700;
@@ -424,11 +448,16 @@ button {
   box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
 }
 .day-sheet-handle {
+  box-sizing: content-box;
   width: 36px;
   height: 5px;
   border-radius: 100px;
   background: var(--border);
-  margin: 6px auto 14px;
+  margin: 14px auto 22px;
+  padding: 12px 30px;
+  background-clip: content-box;
+  touch-action: none;
+  cursor: grab;
 }
 .day-sheet h3 {
   font-size: 17px;

@@ -14,6 +14,7 @@ const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 let S = {
   tab: "list", // 'list' | 'calendar'
   screen: "list", // 'list' | 'calendar' | 'detail'
+  listFilter: "all", // 'all' | 'ongoing' | 'upcoming'
   detailId: null,
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
@@ -115,6 +116,12 @@ function listForFeed() {
   const today = todayISO();
   return [...S.exhibitions]
     .filter((e) => e.endDate >= today)
+    .filter((e) => {
+      if (S.listFilter === "all") return true;
+      const kind = exhibitionStatus(e, today).kind;
+      if (S.listFilter === "upcoming") return kind === "upcoming";
+      return kind === "ongoing" || kind === "ending"; // '전시중'에는 마감임박도 포함
+    })
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
@@ -176,18 +183,41 @@ function renderScreen() {
       ${renderTopbar()}
       <div class="content"><div class="loading-wrap">불러오는 중…</div></div>
     `;
-    return;
-  }
-  if (S.loadError) {
+  } else if (S.loadError) {
     app.innerHTML = h`
       ${renderTopbar()}
       <div class="content"><div class="empty-msg">전시 정보를 불러오지 못했습니다.<br/>네트워크 연결을 확인해주세요.</div></div>
     `;
-    return;
+  } else if (S.screen === "detail") {
+    renderDetail();
+  } else if (S.screen === "calendar") {
+    renderCalendarScreen();
+  } else {
+    renderListScreen();
   }
-  if (S.screen === "detail") return renderDetail();
-  if (S.screen === "calendar") return renderCalendarScreen();
-  return renderListScreen();
+  syncSheetScrollLock();
+}
+
+/* 바텀시트가 떠 있는 동안 뒤 배경이 함께 스크롤되면 iOS에서는 그 드래그가
+   "탭"이 아니라 "스크롤"로 처리되어 스크림을 눌러도 닫히지 않는다.
+   시트가 열려 있을 때는 body를 고정해 배경 스크롤 자체를 막는다. */
+let sheetScrollY = 0;
+function syncSheetScrollLock() {
+  const shouldLock = S.screen === "calendar" && !!S.calSelected;
+  const isLocked = document.body.style.position === "fixed";
+  if (shouldLock && !isLocked) {
+    sheetScrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${sheetScrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+  } else if (!shouldLock && isLocked) {
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    window.scrollTo(0, sheetScrollY);
+  }
 }
 
 function renderTopbar(opts = {}) {
@@ -227,13 +257,36 @@ function renderTabbar() {
 
 /* ---------- list screen ---------- */
 
+const LIST_FILTERS = [
+  { key: "all", label: "전체" },
+  { key: "ongoing", label: "전시중" },
+  { key: "upcoming", label: "전시예정" },
+];
+
+function renderSegmented() {
+  return h`
+    <div class="segmented">
+      ${LIST_FILTERS.map(
+        (f) => `<button class="segment ${S.listFilter === f.key ? "active" : ""}" data-action="filter" data-filter="${f.key}">${esc(f.label)}</button>`
+      ).join("")}
+    </div>
+  `;
+}
+
 function renderListScreen() {
   const list = listForFeed();
   const groups = groupByMonth(list);
 
+  const emptyMsg =
+    S.listFilter === "upcoming"
+      ? "예정된 전시가 아직 없습니다."
+      : S.listFilter === "ongoing"
+      ? "현재 진행 중인 전시가 없습니다."
+      : "현재 서울에서 볼 수 있는 전시 정보가 없습니다.";
+
   const body =
     list.length === 0
-      ? `<div class="empty-msg">현재 서울에서 진행 중인 전시 정보가 없습니다.</div>`
+      ? `<div class="empty-msg">${esc(emptyMsg)}</div>`
       : groups
           .map(
             (g) => h`
@@ -245,7 +298,10 @@ function renderListScreen() {
 
   app.innerHTML = h`
     ${renderTopbar({ title: "서울 전시", sub: `${list.length}개 전시` })}
-    <div class="content">${body}</div>
+    <div class="content">
+      ${renderSegmented()}
+      ${body}
+    </div>
     ${renderTabbar()}
   `;
 }
@@ -401,6 +457,44 @@ function renderCalendarScreen() {
     ${renderTabbar()}
     ${sheet}
   `;
+
+  if (S.calSelected) attachSheetDragHandlers();
+}
+
+/* 시트 핸들을 아래로 끌면 손가락을 따라 1:1로 내려가다가, 일정 거리 이상
+   끌었을 때만 닫힌다 (apple-design의 direct-manipulation/interruptibility 원칙). */
+function attachSheetDragHandlers() {
+  const handle = app.querySelector(".day-sheet-handle");
+  const sheet = app.querySelector(".day-sheet");
+  if (!handle || !sheet) return;
+
+  let dragStartY = null;
+  let dragDy = 0;
+
+  handle.addEventListener("pointerdown", (e) => {
+    handle.setPointerCapture(e.pointerId);
+    dragStartY = e.clientY;
+    dragDy = 0;
+    sheet.style.transition = "none";
+  });
+  handle.addEventListener("pointermove", (e) => {
+    if (dragStartY === null) return;
+    dragDy = Math.max(0, e.clientY - dragStartY);
+    sheet.style.transform = `translateY(${dragDy}px)`;
+  });
+  const endDrag = () => {
+    if (dragStartY === null) return;
+    dragStartY = null;
+    if (dragDy > 90) {
+      S.calSelected = null;
+      renderScreen();
+      return;
+    }
+    sheet.style.transition = "transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)";
+    sheet.style.transform = "";
+  };
+  handle.addEventListener("pointerup", endDrag);
+  handle.addEventListener("pointercancel", endDrag);
 }
 
 function calShiftMonth(delta) {
@@ -474,6 +568,12 @@ app.addEventListener("click", (e) => {
       break;
     case "open-detail":
       openDetail(el.dataset.id);
+      break;
+    case "filter":
+      if (S.listFilter !== el.dataset.filter) {
+        S.listFilter = el.dataset.filter;
+        renderScreen();
+      }
       break;
     case "cal-prev":
       calShiftMonth(-1);

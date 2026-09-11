@@ -1,0 +1,45 @@
+name: Update exhibition data
+
+# 시간 기반 workflow_dispatch만 사용한다 (schedule: 트리거는 쓰지 않음).
+# GitHub Actions의 schedule은 부하가 몰리면 수십 분씩 밀릴 수 있어서,
+# 정확한 시간에 돌리고 싶다면 cron-job.org 같은 외부 무료 cron 서비스에서
+# 아래 workflow_dispatch API를 호출하도록 설정한다. README.md 참고.
+on:
+  workflow_dispatch:
+    inputs:
+      run_reviews:
+        description: "후기 요약도 새로 만들지 (API 비용 발생)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 전시 목록 갱신
+        run: node scripts/scrape-list.mjs
+
+      - name: 관람 후기 요약 갱신
+        if: ${{ inputs.run_reviews }}
+        env:
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/build-reviews.mjs
+
+      - name: 변경사항 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/exhibitions.json
+          git diff --cached --quiet || git commit -m "chore: 전시 데이터 갱신"
+          git push

@@ -1,0 +1,13 @@
+{
+  "name": "seoul-art-exhibitions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "서울 미술 전시회 정보 앱 (art-map.co.kr 데이터 기반)",
+  "type": "module",
+  "scripts": {
+    "scrape": "node scripts/scrape-list.mjs",
+    "reviews": "node scripts/build-reviews.mjs",
+    "build-data": "node scripts/scrape-list.mjs && node scripts/build-reviews.mjs",
+    "serve": "python3 -m http.server 8080"
+  }
+}

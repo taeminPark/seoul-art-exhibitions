@@ -158,15 +158,13 @@ button {
 }
 .exh-poster-wrap {
   width: 100%;
-  aspect-ratio: 3 / 4;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.04);
   position: relative;
 }
 .exh-poster-wrap img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
 }
 .exh-badge {
@@ -223,16 +221,13 @@ button {
 
 .detail-hero {
   width: 100%;
-  aspect-ratio: 3 / 4;
-  max-height: 60vh;
   overflow: hidden;
   border-radius: 0 0 var(--r-lg) var(--r-lg);
   background: rgba(255, 255, 255, 0.04);
 }
 .detail-hero img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
 }
 
@@ -387,8 +382,8 @@ button {
 .cal-cell.selected { background: var(--accent); color: #fff; }
 .cal-cell .cal-dots { display: flex; gap: 3px; height: 5px; }
 .cal-cell .cal-dot { width: 5px; height: 5px; border-radius: 50%; }
-.cal-cell .cal-dot.new { background: var(--green); }
-.cal-cell .cal-dot.end { background: var(--red); }
+.cal-dot.new { background: var(--green); }
+.cal-dot.end { background: var(--red); }
 .cal-cell.selected .cal-dot { background: #fff; }
 
 .cal-legend {

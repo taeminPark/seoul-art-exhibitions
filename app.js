@@ -15,7 +15,6 @@ let S = {
   tab: "list", // 'list' | 'calendar'
   screen: "list", // 'list' | 'calendar' | 'detail'
   detailId: null,
-  returnTab: "list",
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
   calSelected: null,
@@ -416,26 +415,45 @@ function calShiftMonth(delta) {
 }
 
 /* ---------- navigation ---------- */
+/* 사파리의 스와이프-백/뒤로가기 버튼이 앱 내 뒤로가기와 똑같이 동작하도록
+   History API를 유일한 출처로 둔다: 화면 이동은 pushState/replaceState만 하고,
+   실제 화면 전환은 popstate 핸들러 한 곳에서만 수행한다. */
 
 function openDetail(id) {
-  S.detailId = id;
-  S.returnTab = S.tab;
+  history.pushState({ screen: "detail", id }, "");
   navDirection = "forward";
   S.screen = "detail";
+  S.detailId = id;
   render();
 }
 function goBack() {
-  S.screen = S.tab;
-  navDirection = "back";
-  render();
+  history.back();
 }
 function switchTab(tab) {
   if (S.tab === tab) return;
   S.tab = tab;
   S.screen = tab;
   navDirection = "cross";
+  history.replaceState({ screen: tab }, "");
   render();
 }
+
+window.addEventListener("popstate", (e) => {
+  const state = e.state || { screen: S.tab === "calendar" ? "calendar" : "list" };
+  const enteringDetail = state.screen === "detail";
+  const wasInDetail = S.screen === "detail";
+  navDirection = wasInDetail && !enteringDetail ? "back" : enteringDetail && !wasInDetail ? "forward" : "cross";
+
+  if (enteringDetail) {
+    S.screen = "detail";
+    S.detailId = state.id;
+  } else {
+    S.tab = state.screen === "calendar" ? "calendar" : "list";
+    S.screen = S.tab;
+    S.detailId = null;
+  }
+  render();
+});
 
 /* ---------- event delegation ---------- */
 
@@ -476,6 +494,7 @@ app.addEventListener("click", (e) => {
 
 /* ---------- boot ---------- */
 
+history.replaceState({ screen: S.tab }, "");
 render();
 loadExhibitions();
 

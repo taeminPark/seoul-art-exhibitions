@@ -531,12 +531,24 @@ function calShiftMonth(delta) {
    History API를 유일한 출처로 둔다: 화면 이동은 pushState/replaceState만 하고,
    실제 화면 전환은 popstate 핸들러 한 곳에서만 수행한다. */
 
+let savedScrollY = 0; // 상세로 들어가기 전 목록/캘린더 스크롤 위치 (뒤로가기 때 복원)
+
+// innerHTML을 막 교체한 직후엔 레이아웃이 아직 다 안 잡혀서(특히 이미지가
+// 로드되기 전) 그 순간 스크롤 최대값이 실제보다 작다 — 그 상태에서 scrollTo를
+// 부르면 브라우저가 값을 눌러 담아버려서 엉뚱한 위치로 복원된다.
+// 레이아웃이 한 번 안정된 뒤(rAF 두 번) 복원한다.
+function scrollToAfterLayout(y) {
+  requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo(0, y)));
+}
+
 function openDetail(id) {
+  savedScrollY = window.scrollY;
   history.pushState({ screen: "detail", id }, "");
   navDirection = "forward";
   S.screen = "detail";
   S.detailId = id;
   render();
+  window.scrollTo(0, 0); // 상세 화면은 항상 맨 위에서 시작
 }
 function goBack() {
   history.back();
@@ -564,7 +576,14 @@ window.addEventListener("popstate", (e) => {
     S.screen = S.tab;
     S.detailId = null;
   }
+  const goingBackFromDetail = wasInDetail && !enteringDetail;
   render();
+
+  if (enteringDetail) {
+    window.scrollTo(0, 0);
+  } else if (goingBackFromDetail) {
+    scrollToAfterLayout(savedScrollY); // 상세에서 뒤로 나가면 원래 보던 위치로 복원
+  }
 });
 
 /* ---------- event delegation ---------- */
@@ -611,6 +630,10 @@ app.addEventListener("click", (e) => {
 });
 
 /* ---------- boot ---------- */
+
+// 브라우저 자체 스크롤 복원이 우리가 직접 복원하는 위치와 경쟁하면서
+// 어중간한 위치로 튀는 문제가 있어 끄고 직접 관리한다.
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
 history.replaceState({ screen: S.tab }, "");
 render();

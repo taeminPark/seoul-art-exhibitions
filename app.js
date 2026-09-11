@@ -200,13 +200,24 @@ function renderScreen() {
 
 /* 바텀시트가 떠 있는 동안 뒤 배경이 함께 스크롤되면 iOS에서는 그 드래그가
    "탭"이 아니라 "스크롤"로 처리되어 스크림을 눌러도 닫히지 않는다.
-   시트가 열려 있을 때는 body를 고정해 배경 스크롤 자체를 막는다. */
+   시트가 열려 있을 때는 body를 고정해 배경 스크롤 자체를 막는다.
+
+   시트를 연 채로 상세 화면에 들어갔다 돌아오면 한 번 풀렸다가 다시 잠기는데,
+   이때 스크롤 위치를 다시 읽어버리면(이미 상세 화면 쪽 스크롤 상태라
+   보통 0) 시트를 열었던 원래 위치를 잃어버려 화면이 엉뚱한 곳으로 튄다.
+   그래서 "시트가 열려있던 세션" 동안엔 sheetScrollY를 한 번만 기록해두고,
+   상세를 오가며 다시 잠글 때는 새로 읽지 않고 그대로 재사용한다. */
 let sheetScrollY = 0;
+let sheetLockActive = false;
 function syncSheetScrollLock() {
   const shouldLock = S.screen === "calendar" && !!S.calSelected;
   const isLocked = document.body.style.position === "fixed";
+
   if (shouldLock && !isLocked) {
-    sheetScrollY = window.scrollY;
+    if (!sheetLockActive) {
+      sheetScrollY = window.scrollY;
+      sheetLockActive = true;
+    }
     document.body.style.position = "fixed";
     document.body.style.top = `-${sheetScrollY}px`;
     document.body.style.left = "0";
@@ -216,7 +227,13 @@ function syncSheetScrollLock() {
     document.body.style.top = "";
     document.body.style.left = "";
     document.body.style.right = "";
-    window.scrollTo(0, sheetScrollY);
+    if (!S.calSelected) {
+      // 시트를 완전히 닫을 때만 원래 위치로 복원한다. 상세 화면으로
+      // 넘어가는 경우는 상세 쪽 스크롤 로직이 따로 처리하므로 여기서는
+      // 건드리지 않는다 (건드리면 두 로직이 서로 충돌해 화면이 흔들린다).
+      window.scrollTo(0, sheetScrollY);
+      sheetLockActive = false;
+    }
   }
 }
 
@@ -591,7 +608,9 @@ window.addEventListener("popstate", (e) => {
 
   if (enteringDetail) {
     window.scrollTo(0, 0);
-  } else if (goingBackFromDetail) {
+  } else if (goingBackFromDetail && !reopeningSheet) {
+    // 시트가 다시 열리는 경우는 syncSheetScrollLock이 원래 위치를 이미
+    // 복원하므로 여기서 또 스크롤을 건드리면 서로 부딪혀 화면이 흔들린다.
     scrollToAfterLayout(savedScrollY); // 상세에서 뒤로 나가면 원래 보던 위치로 복원
   }
 });

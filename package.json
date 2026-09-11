@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "scrape": "node scripts/scrape-list.mjs",
+    "fetch-culture": "node scripts/fetch-culture-api.mjs",
     "reviews": "node scripts/build-reviews.mjs",
-    "build-data": "node scripts/scrape-list.mjs && node scripts/build-reviews.mjs",
+    "build-data": "node scripts/scrape-list.mjs && node scripts/fetch-culture-api.mjs && node scripts/build-reviews.mjs",
     "serve": "python3 -m http.server 8080"
   }
 }

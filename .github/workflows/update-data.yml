@@ -25,8 +25,13 @@ jobs:
         with:
           node-version: "20"
 
-      - name: 전시 목록 갱신
+      - name: 전시 목록 갱신 (art-map)
         run: node scripts/scrape-list.mjs
+
+      - name: 국공립 기관 전시 갱신 (문화포털 API)
+        env:
+          CULTURE_API_KEY: ${{ secrets.CULTURE_API_KEY }}
+        run: node scripts/fetch-culture-api.mjs
 
       - name: 관람 후기 요약 갱신
         if: ${{ inputs.run_reviews }}

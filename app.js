@@ -358,6 +358,23 @@ function renderDetail() {
         <div class="review-updated">${esc(new Date(review.updatedAt).toLocaleDateString("ko-KR"))} 기준 자동 요약</div>
       `;
 
+  // art-map은 상세정보를 원문 링크로만 연결하지만, 문화포털 API로 들어온 항목은
+  // 관람료/운영시간/설명까지 표준 필드로 갖고 있어서 앱 안에서 바로 보여줄 수 있다.
+  const extraRows = [
+    e.hours ? `<div class="detail-row"><span class="icon">🕒</span><span>${esc(e.hours)}</span></div>` : "",
+    e.admission ? `<div class="detail-row"><span class="icon">🎟️</span><span>${esc(e.admission)}</span></div>` : "",
+    e.ticketInfo ? `<div class="detail-row"><span class="icon">🔖</span><span>${esc(e.ticketInfo)}</span></div>` : "",
+  ].join("");
+
+  const descriptionBlock = e.description
+    ? h`<div class="section-heading">전시 소개</div><div class="review-card"><div class="review-summary">${esc(e.description)}</div></div>`
+    : "";
+
+  const externalLabel = e.source === "culture-api" ? "홈페이지에서 자세히 보기" : "art-map에서 예매·상세정보 보기";
+  const externalBtn = e.sourceUrl
+    ? h`<a class="external-btn" href="${esc(e.sourceUrl)}" target="_blank" rel="noopener">${esc(externalLabel)} ${ICON_EXTERNAL}</a>`
+    : "";
+
   app.innerHTML = h`
     ${renderTopbar({ onBack: true })}
     <div class="detail-hero"><img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" /></div>
@@ -368,10 +385,11 @@ function renderDetail() {
       <h2 class="detail-title">${esc(e.title)}</h2>
       <div class="detail-row"><span class="icon">📍</span><span>${esc(e.venue)}</span></div>
       <div class="detail-row"><span class="icon">📅</span><span>${esc(formatRangeKR(e.startDate, e.endDate))}</span></div>
+      ${extraRows}
 
-      <a class="external-btn" href="${esc(e.sourceUrl)}" target="_blank" rel="noopener">
-        art-map에서 예매·상세정보 보기 ${ICON_EXTERNAL}
-      </a>
+      ${externalBtn}
+
+      ${descriptionBlock}
 
       <div class="section-heading">관람 후기 요약</div>
       <div class="review-card">${reviewBody}</div>

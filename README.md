@@ -1,6 +1,6 @@
 # 서울 전시
 
-서울에서 지금 볼 수 있는 미술 전시 정보를 모아 보여주는 앱입니다. [art-map.co.kr](https://art-map.co.kr)의 전시 데이터를 가져와 두 가지 방식으로 보여줍니다.
+서울에서 지금 볼 수 있는 미술 전시 정보를 모아 보여주는 앱입니다. [art-map.co.kr](https://art-map.co.kr)(동네 갤러리 위주)와 [문화포털 전시정보(통합) Open API](https://www.culture.go.kr/data/openapi/openapiView.do?id=598)(국립현대미술관 등 국공립 기관)를 합쳐서 두 가지 방식으로 보여줍니다.
 
 - **전시 탭** — 포스터 카드가 최신순으로 나열되고, 아래에 제목·장소·기간이 표시됩니다. 카드를 누르면 상세 화면에서 art-map 원문(예매) 링크와 관람 후기 요약을 볼 수 있습니다.
 - **캘린더 탭** — 월간 캘린더에 전시 개막일(초록 점)·마감일(빨간 점)이 표시되고, 날짜를 누르면 그날 관람 가능한 전시 목록이 바텀시트로 나타납니다.
@@ -34,15 +34,30 @@ npm run serve
 }
 ```
 
-전시 상세정보(주소, 관람료, 운영시간)와 예매는 앱 안에서 직접 보여주지 않고 art-map 원문 링크로 연결합니다 — art-map 상세 페이지는 자바스크립트로 렌더링되어 있어 서버 없이 안정적으로 긁어오기 어렵기 때문입니다.
+문화포털 API로 들어온 항목은 `source: "culture-api"`와 함께 `admission`(관람료), `hours`(운영시간), `ticketInfo`(예매안내), `description`(전시 소개)이 값이 있을 때만 추가로 붙습니다.
 
-## 전시 목록 갱신
+art-map 항목은 상세정보(주소, 관람료, 운영시간)를 앱 안에서 직접 보여주지 않고 art-map 원문 링크로 연결합니다 — art-map 상세 페이지는 자바스크립트로 렌더링되어 있어 서버 없이 안정적으로 긁어오기 어렵기 때문입니다. 반면 문화포털 API로 들어온 항목(`source: "culture-api"`)은 관람료·운영시간·전시 소개까지 표준 필드로 제공돼서 앱 안에 바로 표시합니다.
+
+## 전시 목록 갱신 (art-map)
 
 ```
 npm run scrape
 ```
 
 art-map의 내부 API(`/data/new_exhibition.php`)를 호출해 서울 지역의 진행중·예정 전시를 모두 가져와 `data/exhibitions.json`을 다시 씁니다. 외부 라이브러리 없이 Node 내장 `fetch`만 사용합니다.
+
+## 국공립 기관 전시 갱신 (문화포털 API)
+
+art-map은 동네 갤러리는 잘 잡지만 국립현대미술관 같은 국공립 기관은 예정 전시가 거의 안 올라오고, 상세 페이지 자체도 고장나 있어서(위 art-map 상세 페이지 문제 참고) 정부가 직접 표준화해서 제공하는 API를 두 번째 소스로 추가했습니다.
+
+```
+CULTURE_API_KEY=... npm run fetch-culture
+```
+
+1. [공공데이터포털](https://www.data.go.kr)에 가입 → "전시정보" 검색 → **"문화체육관광부_12개 기관 전시정보"** 데이터셋에서 **"활용신청"** (보통 즉시 자동승인, 무료)
+2. 마이페이지 → 활용신청현황에서 발급된 인증키(서비스키)를 `CULTURE_API_KEY`로 사용
+
+국립현대미술관(서울관·덕수궁관만, 과천·청주 제외)·대한민국역사박물관·예술의전당·한국영상자료원의 현재/예정 전시만 걸러서 art-map 데이터와 같은 형식으로 합칩니다. 이미지가 없는 항목은 카드 포맷(이미지+정보)을 지키기 위해 제외하고, art-map에 같은 제목의 전시가 이미 있으면 art-map 쪽을 우선합니다. (국립중앙박물관·국립한글박물관은 서울 소재지만 이 API에서 기간 데이터가 비어 있어 제외했습니다 — API 자체의 데이터 한계입니다.)
 
 ## 관람 후기 요약 갱신 (선택)
 
@@ -73,7 +88,7 @@ Content-Type: application/json
 
 후기 요약까지 매번 갱신하면 API 비용이 발생하므로, 목록만 자주(e.g. 매일) 갱신하고 후기는 `run_reviews: true`로 가끔만 돌리는 걸 권장합니다.
 
-리포지토리 Settings → Secrets and variables → Actions에 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`, `ANTHROPIC_API_KEY`를 등록해야 후기 갱신 스텝이 동작합니다.
+리포지토리 Settings → Secrets and variables → Actions에 `CULTURE_API_KEY`(국공립 기관 갱신), `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`, `ANTHROPIC_API_KEY`(후기 갱신)를 등록해야 해당 스텝들이 동작합니다.
 
 ## 배포 (GitHub Pages)
 

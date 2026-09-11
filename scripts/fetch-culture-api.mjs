@@ -126,10 +126,13 @@ async function main() {
     if (!period || period.end < today) continue;
 
     // 카드 포맷(이미지 + 하단 정보)을 지키기 위해 이미지 없는 항목은 신지 않는다.
-    const image = field(raw, "IMAGE_OBJECT").trim();
+    // URL은 XML 상에서 &가 &amp;로 이스케이프돼 있어서, 디코딩을 안 하면
+    // 링크의 &exhId=... 파라미터가 깨져서 "시스템 오류" 페이지로 연결된다.
+    const image = decodeEntities(field(raw, "IMAGE_OBJECT")).trim();
     if (!image) continue;
 
-    const localId = field(raw, "LOCAL_ID").trim() || field(raw, "URL").trim();
+    const sourceUrl = decodeEntities(field(raw, "URL")).trim() || null;
+    const localId = field(raw, "LOCAL_ID").trim() || sourceUrl;
     parsed.push({
       id: `culture-${localId}`,
       title: stripHtml(field(raw, "TITLE")),
@@ -138,7 +141,7 @@ async function main() {
       poster: image,
       startDate: period.start,
       endDate: period.end,
-      sourceUrl: field(raw, "URL").trim() || null,
+      sourceUrl,
       status: period.start > today ? "upcoming" : "ongoing",
       admission: normalizeAdmission(stripHtml(field(raw, "CHARGE"))),
       hours: stripHtml(field(raw, "DURATION")) || stripHtml(field(raw, "EVENT_PERIOD")) || null,

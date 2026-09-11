@@ -156,12 +156,12 @@ const app = document.getElementById("app");
 let lastScreen = S.screen;
 let navDirection = "forward"; // "forward" | "back" | "cross" — 다음 render() 1회에만 적용
 
-function render() {
+function render(opts = {}) {
   const screenChanged = S.screen !== lastScreen;
   const direction = navDirection;
   navDirection = "forward";
 
-  if (!screenChanged || typeof document.startViewTransition !== "function") {
+  if (!screenChanged || opts.skipTransition || typeof document.startViewTransition !== "function") {
     renderScreen();
     lastScreen = S.screen;
     return;
@@ -433,10 +433,12 @@ function renderCalendarScreen() {
       .filter((e) => e.startDate <= S.calSelected && S.calSelected <= e.endDate)
       .sort((a, b) => a.endDate.localeCompare(b.endDate));
     const label = `${parseISO(S.calSelected).getMonth() + 1}월 ${parseISO(S.calSelected).getDate()}일`;
+    const animClass = suppressSheetAnim ? "no-anim" : "";
+    suppressSheetAnim = false; // 이번 렌더 한 번에만 적용하고 리셋
 
     sheet = h`
-      <div class="day-sheet-scrim" data-action="close-day-sheet"></div>
-      <div class="day-sheet">
+      <div class="day-sheet-scrim ${animClass}" data-action="close-day-sheet"></div>
+      <div class="day-sheet ${animClass}">
         <div class="day-sheet-handle"></div>
         <h3>${esc(label)} 관람 가능한 전시 ${items.length ? `(${items.length})` : ""}</h3>
         ${
@@ -532,6 +534,7 @@ function calShiftMonth(delta) {
    실제 화면 전환은 popstate 핸들러 한 곳에서만 수행한다. */
 
 let savedScrollY = 0; // 상세로 들어가기 전 목록/캘린더 스크롤 위치 (뒤로가기 때 복원)
+let suppressSheetAnim = false; // true면 다음 캘린더 렌더에서 바텀시트 등장 애니메이션을 생략
 
 // innerHTML을 막 교체한 직후엔 레이아웃이 아직 다 안 잡혀서(특히 이미지가
 // 로드되기 전) 그 순간 스크롤 최대값이 실제보다 작다 — 그 상태에서 scrollTo를
@@ -577,7 +580,14 @@ window.addEventListener("popstate", (e) => {
     S.detailId = null;
   }
   const goingBackFromDetail = wasInDetail && !enteringDetail;
-  render();
+
+  // 상세에서 뒤로 나갔을 때 캘린더 바텀시트가 이미 열려있던 상태로 복원되는
+  // 경우, 화면 전체가 슬라이드해 들어오는 애니메이션과 시트 자체의 등장
+  // 애니메이션이 동시에 겹쳐 화면이 흔들려 보인다. 이 경우엔 둘 다 끄고
+  // 원래 있던 자리로 바로 복원한다 (움직인 적 없다는 느낌이 맞다).
+  const reopeningSheet = goingBackFromDetail && S.screen === "calendar" && !!S.calSelected;
+  if (reopeningSheet) suppressSheetAnim = true;
+  render({ skipTransition: reopeningSheet });
 
   if (enteringDetail) {
     window.scrollTo(0, 0);

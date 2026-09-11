@@ -507,6 +507,10 @@ button {
   to { transform: translateY(0); }
 }
 
+/* 상세 화면에서 뒤로가기로 이미 열려있던 시트로 복귀할 때는 다시 튀어
+   오르지 않고 원래 있던 자리에 그대로 있는 것처럼 보여야 한다. */
+.day-sheet-scrim.no-anim, .day-sheet.no-anim { animation: none; }
+
 /* ---------- bottom tab bar ---------- */
 
 .tabbar {

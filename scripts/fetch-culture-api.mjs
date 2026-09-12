@@ -36,16 +36,45 @@ const SEOUL_INSTITUTIONS = new Set(["대한민국역사박물관", "예술의전
 const MULTI_BRANCH_INSTITUTION = "국립현대미술관";
 const MULTI_BRANCH_SEOUL_KEYWORDS = ["서울", "덕수궁"];
 
+// 이름 붙은 HTML 엔티티. DESCRIPTION 필드에 &ndash;, &lsquo;/&rsquo; 같은
+// 문장부호 엔티티가 그대로 남아 화면에 "&ndash;" 텍스트로 보이는 문제가 있어
+// (제목전(展) 항목 등) 실제로 나타나는 것들을 모두 채워뒀다.
+const NAMED_ENTITIES = {
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  amp: "&",
+  nbsp: " ",
+  ndash: "–",
+  mdash: "—",
+  lsquo: "‘",
+  rsquo: "’",
+  ldquo: "“",
+  rdquo: "”",
+  middot: "·",
+  hellip: "…",
+};
+
 function decodeEntities(str) {
+  // 한 번의 패스로 처리해야 "&amp;lt;" 같은 이중 인코딩을 잘못 풀어버리지 않는다
+  // (lt부터 순서대로 .replace를 체이닝하면 &amp;lt; -> &lt; -> < 로 잘못 풀린다).
   return str
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&");
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)))
+    .replace(/&([a-zA-Z]+);/g, (m, name) => NAMED_ENTITIES[name] ?? m);
 }
 function stripHtml(str) {
-  return decodeEntities(str).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  // <style>/<script> 블록은 내용까지 통째로 버려야 한다 — 태그만 벗기면
+  // CSS/JS 텍스트가 "전시소개"에 그대로 노출된다 (바람의 길목 DMZ 등 일부 항목).
+  const withoutBlocks = str
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ");
+  // 태그를 먼저 벗기고 엔티티는 그 다음에 디코딩한다. 순서를 바꾸면
+  // 원문 텍스트에 있던 &lt;/&gt;(실제로는 문장부호로 보여줄 의도)가
+  // 진짜 "<"/">"로 풀린 뒤 다음 단계에서 태그로 오인돼 잘려나간다.
+  const withoutTags = withoutBlocks.replace(/<[^>]*>/g, " ");
+  return decodeEntities(withoutTags).replace(/\s+/g, " ").trim();
 }
 
 function field(itemXml, name) {

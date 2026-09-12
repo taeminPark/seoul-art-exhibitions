@@ -1,6 +1,6 @@
 {
-  "name": "서울 전시",
-  "short_name": "서울전시",
+  "name": "Museum Week",
+  "short_name": "Museum Week",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",

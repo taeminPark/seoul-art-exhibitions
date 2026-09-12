@@ -33,6 +33,15 @@ jobs:
           CULTURE_API_KEY: ${{ secrets.CULTURE_API_KEY }}
         run: node scripts/fetch-culture-api.mjs
 
+      - name: 예술의전당 전시 갱신 (대관 특별전 포함, sac.or.kr)
+        run: node scripts/fetch-sac.mjs
+
+      - name: 세종문화회관 전시 갱신 (대관 특별전 포함, sejongpac.or.kr)
+        run: node scripts/fetch-sejong.mjs
+
+      - name: 롯데뮤지엄 현재 전시 갱신 (lottemuseum.com)
+        run: node scripts/fetch-lotte.mjs
+
       - name: 관람 후기 요약 갱신
         if: ${{ inputs.run_reviews }}
         env:

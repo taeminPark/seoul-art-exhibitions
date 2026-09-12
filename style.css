@@ -131,6 +131,45 @@ button {
   padding: 4px 18px calc(env(safe-area-inset-bottom, 0px) + 100px);
 }
 
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 9px 10px;
+  margin-top: 12px;
+}
+.search-icon {
+  display: flex;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+.search-input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.search-input::placeholder { color: var(--text-3); }
+.search-input::-webkit-search-decoration,
+.search-input::-webkit-search-cancel-button { display: none; }
+.search-clear {
+  display: flex;
+  align-items: center;
+  color: var(--text);
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+.search-clear:active { opacity: 0.6; }
+
 .segmented {
   display: flex;
   gap: 4px;

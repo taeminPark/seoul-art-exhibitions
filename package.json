@@ -7,8 +7,11 @@
   "scripts": {
     "scrape": "node scripts/scrape-list.mjs",
     "fetch-culture": "node scripts/fetch-culture-api.mjs",
+    "fetch-sac": "node scripts/fetch-sac.mjs",
+    "fetch-sejong": "node scripts/fetch-sejong.mjs",
+    "fetch-lotte": "node scripts/fetch-lotte.mjs",
     "reviews": "node scripts/build-reviews.mjs",
-    "build-data": "node scripts/scrape-list.mjs && node scripts/fetch-culture-api.mjs && node scripts/build-reviews.mjs",
+    "build-data": "node scripts/scrape-list.mjs && node scripts/fetch-culture-api.mjs && node scripts/fetch-sac.mjs && node scripts/fetch-sejong.mjs && node scripts/fetch-lotte.mjs && node scripts/build-reviews.mjs",
     "serve": "python3 -m http.server 8080"
   }
 }

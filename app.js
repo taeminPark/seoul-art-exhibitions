@@ -3,6 +3,8 @@
 /* ---------- icons ---------- */
 
 const ICON_BACK = `<svg width="11" height="19" viewBox="0 0 11 19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5L1.5 9.5L9.5 17.5"/></svg>`;
+const ICON_SEARCH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+const ICON_CLEAR = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.35"/><path d="M8.5 8.5l7 7m0-7l-7 7" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>`;
 const ICON_EXTERNAL = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
 const TAB_LIST_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.3"/><rect x="14" y="3" width="7" height="5" rx="1.3"/><rect x="14" y="12" width="7" height="9" rx="1.3"/><rect x="3" y="16" width="7" height="5" rx="1.3"/></svg>`;
 const TAB_CAL_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/></svg>`;
@@ -15,6 +17,7 @@ let S = {
   tab: "list", // 'list' | 'calendar'
   screen: "list", // 'list' | 'calendar' | 'detail'
   listFilter: "all", // 'all' | 'ongoing' | 'upcoming'
+  searchQuery: "",
   detailId: null,
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
@@ -114,6 +117,7 @@ function exhibitionStatus(e, today = todayISO()) {
 
 function listForFeed() {
   const today = todayISO();
+  const q = S.searchQuery.trim().toLowerCase();
   return [...S.exhibitions]
     .filter((e) => e.endDate >= today)
     .filter((e) => {
@@ -122,6 +126,7 @@ function listForFeed() {
       if (S.listFilter === "upcoming") return kind === "upcoming";
       return kind === "ongoing" || kind === "ending"; // '전시중'에는 마감임박도 포함
     })
+    .filter((e) => !q || `${e.title} ${e.venueName} ${e.venue}`.toLowerCase().includes(q))
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
@@ -247,7 +252,7 @@ function renderTopbar(opts = {}) {
       </div>
     `;
   }
-  const title = opts.title || "서울 전시";
+  const title = opts.title || "Museum Week";
   const sub = opts.sub || "";
   return h`
     <div class="topbar">
@@ -280,6 +285,30 @@ const LIST_FILTERS = [
   { key: "upcoming", label: "전시예정" },
 ];
 
+function renderSearchBox() {
+  const clearBtn = S.searchQuery
+    ? `<button class="search-clear" data-action="clear-search" aria-label="검색어 지우기">${ICON_CLEAR}</button>`
+    : "";
+  return h`
+    <div class="search-box">
+      <span class="search-icon">${ICON_SEARCH}</span>
+      <input
+        class="search-input"
+        type="search"
+        inputmode="search"
+        enterkeyhint="search"
+        placeholder="전시명, 장소 검색"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        value="${esc(S.searchQuery)}"
+        data-action="search-input"
+      />
+      ${clearBtn}
+    </div>
+  `;
+}
+
 function renderSegmented() {
   return h`
     <div class="segmented">
@@ -294,12 +323,13 @@ function renderListScreen() {
   const list = listForFeed();
   const groups = groupByMonth(list);
 
-  const emptyMsg =
-    S.listFilter === "upcoming"
-      ? "예정된 전시가 아직 없습니다."
-      : S.listFilter === "ongoing"
-      ? "현재 진행 중인 전시가 없습니다."
-      : "현재 서울에서 볼 수 있는 전시 정보가 없습니다.";
+  const emptyMsg = S.searchQuery.trim()
+    ? `'${S.searchQuery.trim()}'에 대한 검색 결과가 없습니다.`
+    : S.listFilter === "upcoming"
+    ? "예정된 전시가 아직 없습니다."
+    : S.listFilter === "ongoing"
+    ? "현재 진행 중인 전시가 없습니다."
+    : "현재 서울에서 볼 수 있는 전시 정보가 없습니다.";
 
   const body =
     list.length === 0
@@ -314,13 +344,33 @@ function renderListScreen() {
           .join("");
 
   app.innerHTML = h`
-    ${renderTopbar({ title: "서울 전시", sub: `${list.length}개 전시` })}
+    ${renderTopbar({ title: "Museum Week", sub: `${list.length}개 전시` })}
     <div class="content">
+      ${renderSearchBox()}
       ${renderSegmented()}
       ${body}
     </div>
     ${renderTabbar()}
   `;
+  restoreSearchFocus();
+}
+
+// app.innerHTML을 통째로 새로 그리기 때문에, 검색창에 입력할 때마다 다시
+// 그려지면 커서 위치와 포커스를 잃는다. 입력 시점의 커서 위치를 기억해뒀다가
+// 다시 그린 뒤 같은 입력창에 포커스와 커서 위치를 복원한다.
+let pendingSearchFocus = null; // { start, end } | null
+function restoreSearchFocus() {
+  if (!pendingSearchFocus) return;
+  const { start, end } = pendingSearchFocus;
+  pendingSearchFocus = null;
+  const inputEl = app.querySelector('[data-action="search-input"]');
+  if (!inputEl) return;
+  inputEl.focus();
+  try {
+    inputEl.setSelectionRange(start, end);
+  } catch {
+    /* type="search" 등 일부 브라우저에서 setSelectionRange를 지원하지 않을 수 있음 */
+  }
 }
 
 function renderExhCard(e) {
@@ -387,7 +437,8 @@ function renderDetail() {
     ? h`<div class="section-heading">전시 소개</div><div class="review-card"><div class="review-summary">${esc(e.description)}</div></div>`
     : "";
 
-  const externalLabel = e.source === "culture-api" ? "홈페이지에서 자세히 보기" : "art-map에서 예매·상세정보 보기";
+  const HOMEPAGE_SOURCES = new Set(["culture-api", "sac", "sejong", "lotte"]);
+  const externalLabel = HOMEPAGE_SOURCES.has(e.source) ? "홈페이지에서 자세히 보기" : "art-map에서 예매·상세정보 보기";
   const externalBtn = e.sourceUrl
     ? h`<a class="external-btn" href="${esc(e.sourceUrl)}" target="_blank" rel="noopener">${esc(externalLabel)} ${ICON_EXTERNAL}</a>`
     : "";
@@ -655,7 +706,35 @@ app.addEventListener("click", (e) => {
       S.calSelected = null;
       renderScreen();
       break;
+    case "clear-search":
+      S.searchQuery = "";
+      pendingSearchFocus = { start: 0, end: 0 };
+      renderScreen();
+      break;
   }
+});
+
+// 한글 등 조합형 입력(IME)은 글자가 완성되기 전까지 input 이벤트가 여러 번
+// 발생한다. 그때마다 app.innerHTML을 통째로 다시 그리면 입력 중이던 조합
+// 상태가 끊겨버려서, 조합이 끝날 때(compositionend)만 반영한다.
+let isComposing = false;
+app.addEventListener("compositionstart", (e) => {
+  if (e.target.closest('[data-action="search-input"]')) isComposing = true;
+});
+app.addEventListener("compositionend", (e) => {
+  const el = e.target.closest('[data-action="search-input"]');
+  isComposing = false;
+  if (!el) return;
+  S.searchQuery = el.value;
+  pendingSearchFocus = { start: el.selectionStart, end: el.selectionEnd };
+  renderScreen();
+});
+app.addEventListener("input", (e) => {
+  const el = e.target.closest('[data-action="search-input"]');
+  if (!el || isComposing || e.isComposing) return;
+  S.searchQuery = el.value;
+  pendingSearchFocus = { start: el.selectionStart, end: el.selectionEnd };
+  renderScreen();
 });
 
 /* ---------- boot ---------- */

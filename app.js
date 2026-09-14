@@ -409,20 +409,21 @@ function renderDetail() {
   const statusColor = status.kind === "ending" ? "var(--red)" : status.kind === "upcoming" ? "var(--orange)" : "var(--green)";
 
   const review = e.reviewSummary;
-  const reviewBody = !review
-    ? `<div class="review-empty">아직 관람 후기 요약이 준비되지 않았습니다.</div>`
+  const reviewBody = !review || !review.posts || !review.posts.length
+    ? `<div class="review-card"><div class="review-empty">아직 관람 후기가 없습니다.</div></div>`
     : h`
-        <div class="review-summary">${esc(review.summary)}</div>
-        ${
-          review.sources && review.sources.length
-            ? `<div class="review-sources">${review.sources
-                .map(
-                  (s) => `<a class="review-source" href="${esc(s.url)}" target="_blank" rel="noopener">↗ ${esc(s.title)}</a>`
-                )
-                .join("")}</div>`
-            : ""
-        }
-        <div class="review-updated">${esc(new Date(review.updatedAt).toLocaleDateString("ko-KR"))} 기준 자동 요약</div>
+        <div class="review-posts">
+          ${review.posts
+            .map(
+              (p) => h`
+                <a class="review-post" href="${esc(p.link)}" target="_blank" rel="noopener">
+                  <div class="review-post-title">${esc(p.title)}</div>
+                  <div class="review-post-desc">${esc(p.description)}</div>
+                </a>
+              `
+            )
+            .join("")}
+        </div>
       `;
 
   // art-map은 상세정보를 원문 링크로만 연결하지만, 문화포털 API로 들어온 항목은
@@ -437,7 +438,19 @@ function renderDetail() {
     ? h`<div class="section-heading">전시 소개</div><div class="review-card"><div class="review-summary">${esc(e.description)}</div></div>`
     : "";
 
-  const HOMEPAGE_SOURCES = new Set(["culture-api", "sac", "sejong", "lotte"]);
+  const HOMEPAGE_SOURCES = new Set([
+    "culture-api",
+    "sac",
+    "sejong",
+    "lotte",
+    "leeum",
+    "apma",
+    "seoulmuseum",
+    "daelim",
+    "whanki",
+    "sungkok",
+    "ilmin",
+  ]);
   const externalLabel = HOMEPAGE_SOURCES.has(e.source) ? "홈페이지에서 자세히 보기" : "art-map에서 예매·상세정보 보기";
   const externalBtn = e.sourceUrl
     ? h`<a class="external-btn" href="${esc(e.sourceUrl)}" target="_blank" rel="noopener">${esc(externalLabel)} ${ICON_EXTERNAL}</a>`
@@ -459,8 +472,8 @@ function renderDetail() {
 
       ${descriptionBlock}
 
-      <div class="section-heading">관람 후기 요약</div>
-      <div class="review-card">${reviewBody}</div>
+      <div class="section-heading">관람 후기</div>
+      ${reviewBody}
     </div>
   `;
 }

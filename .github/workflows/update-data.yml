@@ -6,11 +6,6 @@ name: Update exhibition data
 # 아래 workflow_dispatch API를 호출하도록 설정한다. README.md 참고.
 on:
   workflow_dispatch:
-    inputs:
-      run_reviews:
-        description: "후기 요약도 새로 만들지 (API 비용 발생)"
-        type: boolean
-        default: false
 
 permissions:
   contents: write
@@ -42,13 +37,30 @@ jobs:
       - name: 롯데뮤지엄 현재 전시 갱신 (lottemuseum.com)
         run: node scripts/fetch-lotte.mjs
 
-      - name: 관람 후기 요약 갱신
-        if: ${{ inputs.run_reviews }}
+      - name: 리움미술관 전시 갱신 (leeumhoam.org)
+        run: node scripts/fetch-leeum.mjs
+
+      - name: 아모레퍼시픽미술관 현재 전시 갱신 (apma.amorepacific.com)
+        run: node scripts/fetch-apma.mjs
+
+      - name: 서울미술관 전시 갱신 (seoulmuseum.org)
+        run: node scripts/fetch-seoulmuseum.mjs
+
+      - name: 대림미술관/디뮤지엄 전시 갱신 (daelimmuseum.org)
+        run: node scripts/fetch-daelim.mjs
+
+      - name: 환기미술관/성곡미술관 전시 갱신
+        run: node scripts/fetch-whanki-sungkok.mjs
+
+      - name: 일민미술관 전시 갱신 (ilmin.org)
+        run: node scripts/fetch-ilmin.mjs
+
+      - name: 관람 후기 갱신 (네이버 블로그, NAVER API HUB)
+        if: ${{ secrets.NAVER_API_HUB_CLIENT_ID != '' }}
         env:
-          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: node scripts/build-reviews.mjs
+          NAVER_API_HUB_CLIENT_ID: ${{ secrets.NAVER_API_HUB_CLIENT_ID }}
+          NAVER_API_HUB_CLIENT_SECRET: ${{ secrets.NAVER_API_HUB_CLIENT_SECRET }}
+        run: node scripts/fetch-review-snippets.mjs
 
       - name: 변경사항 커밋
         run: |

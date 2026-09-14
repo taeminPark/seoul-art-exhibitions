@@ -384,22 +384,36 @@ button {
   font-weight: 500;
   line-height: 1.6;
 }
-.review-sources { display: flex; flex-direction: column; gap: 6px; }
-.review-source {
+.review-posts { display: flex; flex-direction: column; gap: 10px; }
+.review-post {
   display: block;
-  font-size: 12.5px;
-  color: var(--accent);
-  font-weight: 600;
-  padding: 4px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  transition: background var(--fast);
 }
-.review-updated {
-  font-size: 11.5px;
-  color: var(--text-3);
-  margin-top: 10px;
-  font-weight: 500;
+.review-post:active { background: var(--bg-elev-press); }
+.review-post-title {
+  font-size: 14.5px;
+  font-weight: 650;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.review-post-desc {
+  font-size: 13px;
+  font-weight: 450;
+  color: var(--text-2);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ---------- calendar ---------- */

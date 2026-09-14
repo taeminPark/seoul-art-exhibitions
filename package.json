@@ -10,8 +10,14 @@
     "fetch-sac": "node scripts/fetch-sac.mjs",
     "fetch-sejong": "node scripts/fetch-sejong.mjs",
     "fetch-lotte": "node scripts/fetch-lotte.mjs",
-    "reviews": "node scripts/build-reviews.mjs",
-    "build-data": "node scripts/scrape-list.mjs && node scripts/fetch-culture-api.mjs && node scripts/fetch-sac.mjs && node scripts/fetch-sejong.mjs && node scripts/fetch-lotte.mjs && node scripts/build-reviews.mjs",
+    "fetch-leeum": "node scripts/fetch-leeum.mjs",
+    "fetch-apma": "node scripts/fetch-apma.mjs",
+    "fetch-seoulmuseum": "node scripts/fetch-seoulmuseum.mjs",
+    "fetch-daelim": "node scripts/fetch-daelim.mjs",
+    "fetch-whanki-sungkok": "node scripts/fetch-whanki-sungkok.mjs",
+    "fetch-ilmin": "node scripts/fetch-ilmin.mjs",
+    "fetch-review-snippets": "node --env-file=.env scripts/fetch-review-snippets.mjs",
+    "build-data": "node scripts/scrape-list.mjs && node scripts/fetch-culture-api.mjs && node scripts/fetch-sac.mjs && node scripts/fetch-sejong.mjs && node scripts/fetch-lotte.mjs && node scripts/fetch-leeum.mjs && node scripts/fetch-apma.mjs && node scripts/fetch-seoulmuseum.mjs && node scripts/fetch-daelim.mjs && node scripts/fetch-whanki-sungkok.mjs && node scripts/fetch-ilmin.mjs",
     "serve": "python3 -m http.server 8080"
   }
 }

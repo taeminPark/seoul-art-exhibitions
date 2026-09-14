@@ -104,7 +104,7 @@ async function main() {
   const byId = new Map();
   for (const item of [...ongoing, ...upcoming]) byId.set(item.id, item);
 
-  // 기존 파일에 있던 reviewSummary(리뷰 요약)는 build-reviews.mjs가 채운 데이터이므로 보존한다.
+  // 기존 파일에 있던 reviewSummary(리뷰 요약)는 별도 절차로 채운 데이터이므로 보존한다.
   let previous = [];
   try {
     previous = JSON.parse(await readFile(OUT_PATH, "utf8"));

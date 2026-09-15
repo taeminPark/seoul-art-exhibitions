@@ -286,9 +286,6 @@ const LIST_FILTERS = [
 ];
 
 function renderSearchBox() {
-  const clearBtn = S.searchQuery
-    ? `<button class="search-clear" data-action="clear-search" aria-label="검색어 지우기">${ICON_CLEAR}</button>`
-    : "";
   return h`
     <div class="search-box">
       <span class="search-icon">${ICON_SEARCH}</span>
@@ -304,7 +301,7 @@ function renderSearchBox() {
         value="${esc(S.searchQuery)}"
         data-action="search-input"
       />
-      ${clearBtn}
+      <button class="search-clear" data-action="clear-search" aria-label="검색어 지우기" ${S.searchQuery ? "" : "hidden"}>${ICON_CLEAR}</button>
     </div>
   `;
 }
@@ -319,10 +316,8 @@ function renderSegmented() {
   `;
 }
 
-function renderListScreen() {
-  const list = listForFeed();
+function renderListResultsBody(list) {
   const groups = groupByMonth(list);
-
   const emptyMsg = S.searchQuery.trim()
     ? `'${S.searchQuery.trim()}'에 대한 검색 결과가 없습니다.`
     : S.listFilter === "upcoming"
@@ -331,46 +326,51 @@ function renderListScreen() {
     ? "현재 진행 중인 전시가 없습니다."
     : "현재 서울에서 볼 수 있는 전시 정보가 없습니다.";
 
-  const body =
-    list.length === 0
-      ? `<div class="empty-msg">${esc(emptyMsg)}</div>`
-      : groups
-          .map(
-            (g) => h`
-        <div class="month-heading">${esc(g.label)}</div>
-        ${g.items.map((e) => renderExhCard(e)).join("")}
-      `
-          )
-          .join("");
+  return list.length === 0
+    ? `<div class="empty-msg">${esc(emptyMsg)}</div>`
+    : groups
+        .map(
+          (g) => h`
+      <div class="month-heading">${esc(g.label)}</div>
+      ${g.items.map((e) => renderExhCard(e)).join("")}
+    `
+        )
+        .join("");
+}
+
+function renderListScreen() {
+  const list = listForFeed();
 
   app.innerHTML = h`
     ${renderTopbar({ title: "Museum Week", sub: `${list.length}개 전시` })}
     <div class="content">
       ${renderSearchBox()}
       ${renderSegmented()}
-      ${body}
+      <div id="list-results">${renderListResultsBody(list)}</div>
     </div>
     ${renderTabbar()}
   `;
-  restoreSearchFocus();
 }
 
-// app.innerHTML을 통째로 새로 그리기 때문에, 검색창에 입력할 때마다 다시
-// 그려지면 커서 위치와 포커스를 잃는다. 입력 시점의 커서 위치를 기억해뒀다가
-// 다시 그린 뒤 같은 입력창에 포커스와 커서 위치를 복원한다.
-let pendingSearchFocus = null; // { start, end } | null
-function restoreSearchFocus() {
-  if (!pendingSearchFocus) return;
-  const { start, end } = pendingSearchFocus;
-  pendingSearchFocus = null;
-  const inputEl = app.querySelector('[data-action="search-input"]');
-  if (!inputEl) return;
-  inputEl.focus();
-  try {
-    inputEl.setSelectionRange(start, end);
-  } catch {
-    /* type="search" 등 일부 브라우저에서 setSelectionRange를 지원하지 않을 수 있음 */
+// 검색창에 한 글자씩 입력할 때마다 화면 전체(app.innerHTML)를 다시 그리면,
+// 검색창 <input> 자체가 매번 새 DOM 요소로 교체된다. 포커스는 다시 걸어주면
+// 되니 티가 안 나지만, 한글은 음절 하나가 완성될 때마다(compositionend)
+// 조합 세션이 그 DOM 요소에 묶여 있어서 — 요소가 통째로 바뀌면 조합 세션이
+// 새 요소로 매끄럽게 이어지지 못해 다음 음절의 자모가 씹히는 문제가 있었다.
+// 그래서 검색어가 바뀔 때는 화면 전체를 다시 그리지 않고, 검색창 <input>은
+// 그대로 둔 채 결과 목록/지우기 버튼/상단 개수만 갱신한다.
+function updateListResults() {
+  const resultsEl = app.querySelector("#list-results");
+  if (S.screen !== "list" || !resultsEl) {
+    renderScreen();
+    return;
   }
+  const list = listForFeed();
+  resultsEl.innerHTML = renderListResultsBody(list);
+  const sub = app.querySelector(".topbar .sub");
+  if (sub) sub.textContent = `${list.length}개 전시`;
+  const clearBtn = app.querySelector(".search-clear");
+  if (clearBtn) clearBtn.hidden = !S.searchQuery;
 }
 
 function renderExhCard(e) {
@@ -719,17 +719,22 @@ app.addEventListener("click", (e) => {
       S.calSelected = null;
       renderScreen();
       break;
-    case "clear-search":
+    case "clear-search": {
       S.searchQuery = "";
-      pendingSearchFocus = { start: 0, end: 0 };
-      renderScreen();
+      const inputEl = app.querySelector('[data-action="search-input"]');
+      if (inputEl) {
+        inputEl.value = "";
+        inputEl.focus();
+      }
+      updateListResults();
       break;
+    }
   }
 });
 
 // 한글 등 조합형 입력(IME)은 글자가 완성되기 전까지 input 이벤트가 여러 번
-// 발생한다. 그때마다 app.innerHTML을 통째로 다시 그리면 입력 중이던 조합
-// 상태가 끊겨버려서, 조합이 끝날 때(compositionend)만 반영한다.
+// 발생한다. 그때마다 결과를 다시 그리면 입력 중이던 조합 상태가 끊겨버려서,
+// 조합이 끝날 때(compositionend)만 반영한다.
 let isComposing = false;
 app.addEventListener("compositionstart", (e) => {
   if (e.target.closest('[data-action="search-input"]')) isComposing = true;
@@ -739,15 +744,13 @@ app.addEventListener("compositionend", (e) => {
   isComposing = false;
   if (!el) return;
   S.searchQuery = el.value;
-  pendingSearchFocus = { start: el.selectionStart, end: el.selectionEnd };
-  renderScreen();
+  updateListResults();
 });
 app.addEventListener("input", (e) => {
   const el = e.target.closest('[data-action="search-input"]');
   if (!el || isComposing || e.isComposing) return;
   S.searchQuery = el.value;
-  pendingSearchFocus = { start: el.selectionStart, end: el.selectionEnd };
-  renderScreen();
+  updateListResults();
 });
 
 /* ---------- boot ---------- */

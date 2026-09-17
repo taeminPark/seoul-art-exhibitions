@@ -8,26 +8,32 @@ const ICON_CLEAR = `<svg width="15" height="15" viewBox="0 0 24 24" fill="curren
 const ICON_EXTERNAL = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
 const TAB_LIST_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.3"/><rect x="14" y="3" width="7" height="5" rx="1.3"/><rect x="14" y="12" width="7" height="9" rx="1.3"/><rect x="3" y="16" width="7" height="5" rx="1.3"/></svg>`;
 const TAB_CAL_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/></svg>`;
+const TAB_FAV_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.2-4.5-9.8-9C.7 8.2 1.8 4 5.8 4c2.1 0 3.6 1.2 4.6 2.5.5.6.6.9 1.6.9s1.1-.3 1.6-.9C14.6 5.2 16.1 4 18.2 4c4 0 5.1 4.2 3.6 7.5-2.6 4.5-9.8 9-9.8 9z"/></svg>`;
+const ICON_SETTINGS = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+const ICON_CHECK = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 /* ---------- state ---------- */
 
 let S = {
-  tab: "list", // 'list' | 'calendar'
-  screen: "list", // 'list' | 'calendar' | 'detail'
+  tab: "list", // 'list' | 'calendar' | 'favorites'
+  screen: "list", // 'list' | 'calendar' | 'favorites' | 'detail' | 'venue-picker'
   listFilter: "all", // 'all' | 'ongoing' | 'upcoming'
+  favFilter: "all", // 'all' | 'ongoing' | 'upcoming' — '내 미술관' 탭 전용 (전시 탭 필터와 별개)
   searchQuery: "",
   detailId: null,
   calYear: new Date().getFullYear(),
   calMonth: new Date().getMonth(),
   calSelected: null,
   exhibitions: [],
+  favoriteVenues: [], // 등록한 관심 미술관의 venueName 목록
   loaded: false,
   loadError: false,
 };
 
 const LS_CACHE_KEY = "sa_exhibitions_cache_v1";
+const LS_FAVORITES_KEY = "sa_favorite_venues_v1";
 
 /* ---------- data loading ---------- */
 
@@ -130,6 +136,32 @@ function listForFeed() {
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
+function allVenueNames() {
+  const set = new Set(S.exhibitions.map((e) => e.venueName).filter(Boolean));
+  return [...set].sort((a, b) => a.localeCompare(b, "ko"));
+}
+
+function favoritesForFeed() {
+  const today = todayISO();
+  return [...S.exhibitions]
+    .filter((e) => e.endDate >= today)
+    .filter((e) => S.favoriteVenues.includes(e.venueName))
+    .filter((e) => {
+      if (S.favFilter === "all") return true;
+      const kind = exhibitionStatus(e, today).kind;
+      if (S.favFilter === "upcoming") return kind === "upcoming";
+      return kind === "ongoing" || kind === "ending";
+    })
+    .sort((a, b) => b.startDate.localeCompare(a.startDate));
+}
+
+function toggleFavoriteVenue(name) {
+  const idx = S.favoriteVenues.indexOf(name);
+  if (idx === -1) S.favoriteVenues.push(name);
+  else S.favoriteVenues.splice(idx, 1);
+  saveJSON(LS_FAVORITES_KEY, S.favoriteVenues);
+}
+
 function groupByMonth(list) {
   const groups = [];
   let currentLabel = null;
@@ -195,8 +227,12 @@ function renderScreen() {
     `;
   } else if (S.screen === "detail") {
     renderDetail();
+  } else if (S.screen === "venue-picker") {
+    renderVenuePickerScreen();
   } else if (S.screen === "calendar") {
     renderCalendarScreen();
+  } else if (S.screen === "favorites") {
+    renderFavoritesScreen();
   } else {
     renderListScreen();
   }
@@ -260,6 +296,7 @@ function renderTopbar(opts = {}) {
         <h1>${esc(title)}</h1>
         ${sub ? `<div class="sub">${esc(sub)}</div>` : ""}
       </div>
+      ${opts.action || ""}
     </div>
   `;
 }
@@ -272,6 +309,9 @@ function renderTabbar() {
       </button>
       <button class="tab-btn ${S.tab === "calendar" ? "active" : ""}" data-action="tab-calendar">
         <span class="tab-icon">${TAB_CAL_ICON}</span>캘린더
+      </button>
+      <button class="tab-btn ${S.tab === "favorites" ? "active" : ""}" data-action="tab-favorites">
+        <span class="tab-icon">${TAB_FAV_ICON}</span>내 미술관
       </button>
     </div>
   `;
@@ -316,16 +356,8 @@ function renderSegmented() {
   `;
 }
 
-function renderListResultsBody(list) {
+function renderResultsBody(list, emptyMsg) {
   const groups = groupByMonth(list);
-  const emptyMsg = S.searchQuery.trim()
-    ? `'${S.searchQuery.trim()}'에 대한 검색 결과가 없습니다.`
-    : S.listFilter === "upcoming"
-    ? "예정된 전시가 아직 없습니다."
-    : S.listFilter === "ongoing"
-    ? "현재 진행 중인 전시가 없습니다."
-    : "현재 서울에서 볼 수 있는 전시 정보가 없습니다.";
-
   return list.length === 0
     ? `<div class="empty-msg">${esc(emptyMsg)}</div>`
     : groups
@@ -336,6 +368,27 @@ function renderListResultsBody(list) {
     `
         )
         .join("");
+}
+
+function renderListResultsBody(list) {
+  const emptyMsg = S.searchQuery.trim()
+    ? `'${S.searchQuery.trim()}'에 대한 검색 결과가 없습니다.`
+    : S.listFilter === "upcoming"
+    ? "예정된 전시가 아직 없습니다."
+    : S.listFilter === "ongoing"
+    ? "현재 진행 중인 전시가 없습니다."
+    : "현재 서울에서 볼 수 있는 전시 정보가 없습니다.";
+  return renderResultsBody(list, emptyMsg);
+}
+
+function renderFavResultsBody(list) {
+  const emptyMsg =
+    S.favFilter === "upcoming"
+      ? "등록한 미술관에 예정된 전시가 없습니다."
+      : S.favFilter === "ongoing"
+      ? "등록한 미술관에 현재 진행 중인 전시가 없습니다."
+      : "등록한 미술관에 볼 수 있는 전시가 없습니다.";
+  return renderResultsBody(list, emptyMsg);
 }
 
 function renderListScreen() {
@@ -394,6 +447,78 @@ function renderExhCard(e) {
         <div class="exh-dates">${esc(formatRangeKR(e.startDate, e.endDate))}</div>
       </div>
     </a>
+  `;
+}
+
+/* ---------- favorites screen ---------- */
+
+function renderFavSegmented() {
+  return h`
+    <div class="segmented">
+      ${LIST_FILTERS.map(
+        (f) => `<button class="segment ${S.favFilter === f.key ? "active" : ""}" data-action="fav-filter" data-filter="${f.key}">${esc(f.label)}</button>`
+      ).join("")}
+    </div>
+  `;
+}
+
+function renderVenueChecklist() {
+  const venues = allVenueNames();
+  if (venues.length === 0) {
+    return `<div class="empty-msg">전시 데이터를 불러오는 중입니다…</div>`;
+  }
+  return h`
+    <div class="venue-list">
+      ${venues
+        .map((name) => {
+          const checked = S.favoriteVenues.includes(name);
+          return h`
+            <button class="venue-row ${checked ? "checked" : ""}" data-action="toggle-venue" data-venue="${esc(name)}">
+              <span>${esc(name)}</span>
+              <span class="venue-check">${checked ? ICON_CHECK : ""}</span>
+            </button>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function renderFavoritesScreen() {
+  if (S.favoriteVenues.length === 0) {
+    app.innerHTML = h`
+      ${renderTopbar({ title: "내 미술관" })}
+      <div class="content">
+        <div class="fav-intro">자주 가는 미술관을 등록하면 그 미술관 전시만 모아볼 수 있어요.</div>
+        ${renderVenueChecklist()}
+      </div>
+      ${renderTabbar()}
+    `;
+    return;
+  }
+
+  const list = favoritesForFeed();
+  app.innerHTML = h`
+    ${renderTopbar({
+      title: "내 미술관",
+      sub: `${list.length}개 전시`,
+      action: `<button class="iconbtn" data-action="open-venue-picker" aria-label="미술관 선택">${ICON_SETTINGS}</button>`,
+    })}
+    <div class="content">
+      ${renderFavSegmented()}
+      <div id="fav-results">${renderFavResultsBody(list)}</div>
+    </div>
+    ${renderTabbar()}
+  `;
+}
+
+function renderVenuePickerScreen() {
+  app.innerHTML = h`
+    ${renderTopbar({ onBack: true })}
+    <div class="content">
+      <div class="section-heading" style="margin-top:14px;">미술관 선택</div>
+      ${renderVenueChecklist()}
+    </div>
   `;
 }
 
@@ -634,6 +759,14 @@ function openDetail(id) {
   render();
   window.scrollTo(0, 0); // 상세 화면은 항상 맨 위에서 시작
 }
+function openVenuePicker() {
+  savedScrollY = window.scrollY;
+  history.pushState({ screen: "venue-picker" }, "");
+  navDirection = "forward";
+  S.screen = "venue-picker";
+  render();
+  window.scrollTo(0, 0);
+}
 function goBack() {
   history.back();
 }
@@ -647,20 +780,27 @@ function switchTab(tab) {
 }
 
 window.addEventListener("popstate", (e) => {
-  const state = e.state || { screen: S.tab === "calendar" ? "calendar" : "list" };
+  const state = e.state || { screen: S.tab === "calendar" ? "calendar" : S.tab === "favorites" ? "favorites" : "list" };
   const enteringDetail = state.screen === "detail";
+  const enteringPicker = state.screen === "venue-picker";
   const wasInDetail = S.screen === "detail";
-  navDirection = wasInDetail && !enteringDetail ? "back" : enteringDetail && !wasInDetail ? "forward" : "cross";
+  // 상세 화면과 미술관 선택 화면은 둘 다 "쌓이는" 화면이라 같은 방향 규칙을 쓴다.
+  const wasStacked = wasInDetail || S.screen === "venue-picker";
+  const enteringStacked = enteringDetail || enteringPicker;
+  navDirection = wasStacked && !enteringStacked ? "back" : enteringStacked && !wasStacked ? "forward" : "cross";
 
   if (enteringDetail) {
     S.screen = "detail";
     S.detailId = state.id;
+  } else if (enteringPicker) {
+    S.screen = "venue-picker";
   } else {
-    S.tab = state.screen === "calendar" ? "calendar" : "list";
+    S.tab = state.screen === "calendar" ? "calendar" : state.screen === "favorites" ? "favorites" : "list";
     S.screen = S.tab;
     S.detailId = null;
   }
   const goingBackFromDetail = wasInDetail && !enteringDetail;
+  const goingBackFromStacked = wasStacked && !enteringStacked;
 
   // 상세에서 뒤로 나갔을 때 캘린더 바텀시트가 이미 열려있던 상태로 복원되는
   // 경우, 화면 전체가 슬라이드해 들어오는 애니메이션과 시트 자체의 등장
@@ -670,12 +810,12 @@ window.addEventListener("popstate", (e) => {
   if (reopeningSheet) suppressSheetAnim = true;
   render({ skipTransition: reopeningSheet });
 
-  if (enteringDetail) {
+  if (enteringStacked) {
     window.scrollTo(0, 0);
-  } else if (goingBackFromDetail && !reopeningSheet) {
+  } else if (goingBackFromStacked && !reopeningSheet) {
     // 시트가 다시 열리는 경우는 syncSheetScrollLock이 원래 위치를 이미
     // 복원하므로 여기서 또 스크롤을 건드리면 서로 부딪혀 화면이 흔들린다.
-    scrollToAfterLayout(savedScrollY); // 상세에서 뒤로 나가면 원래 보던 위치로 복원
+    scrollToAfterLayout(savedScrollY); // 상세/미술관 선택에서 뒤로 나가면 원래 보던 위치로 복원
   }
 });
 
@@ -696,12 +836,28 @@ app.addEventListener("click", (e) => {
     case "tab-calendar":
       switchTab("calendar");
       break;
+    case "tab-favorites":
+      switchTab("favorites");
+      break;
     case "open-detail":
       openDetail(el.dataset.id);
+      break;
+    case "open-venue-picker":
+      openVenuePicker();
+      break;
+    case "toggle-venue":
+      toggleFavoriteVenue(el.dataset.venue);
+      renderScreen();
       break;
     case "filter":
       if (S.listFilter !== el.dataset.filter) {
         S.listFilter = el.dataset.filter;
+        renderScreen();
+      }
+      break;
+    case "fav-filter":
+      if (S.favFilter !== el.dataset.filter) {
+        S.favFilter = el.dataset.filter;
         renderScreen();
       }
       break;
@@ -758,6 +914,8 @@ app.addEventListener("input", (e) => {
 // 브라우저 자체 스크롤 복원이 우리가 직접 복원하는 위치와 경쟁하면서
 // 어중간한 위치로 튀는 문제가 있어 끄고 직접 관리한다.
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+S.favoriteVenues = loadJSON(LS_FAVORITES_KEY, []);
 
 history.replaceState({ screen: S.tab }, "");
 render();

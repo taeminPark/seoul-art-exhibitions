@@ -564,6 +564,33 @@ button {
    오르지 않고 원래 있던 자리에 그대로 있는 것처럼 보여야 한다. */
 .day-sheet-scrim.no-anim, .day-sheet.no-anim { animation: none; }
 
+/* ---------- favorites / venue picker ---------- */
+
+.fav-intro {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 14px 2px 18px;
+}
+
+.venue-list { display: flex; flex-direction: column; gap: 8px; }
+.venue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--r-md);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background var(--fast), border-color var(--fast), transform var(--fast);
+}
+.venue-row:active { transform: scale(0.98); background: var(--bg-elev-press); }
+.venue-row.checked { border-color: var(--accent); color: var(--accent); }
+.venue-check { display: flex; color: var(--accent); }
+
 /* ---------- bottom tab bar ---------- */
 
 .tabbar {

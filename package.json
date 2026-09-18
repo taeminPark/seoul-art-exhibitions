@@ -17,6 +17,7 @@
     "fetch-whanki-sungkok": "node scripts/fetch-whanki-sungkok.mjs",
     "fetch-ilmin": "node scripts/fetch-ilmin.mjs",
     "fetch-review-snippets": "node --env-file=.env scripts/fetch-review-snippets.mjs",
+    "check-images": "node scripts/check-images.mjs",
     "build-data": "node scripts/scrape-list.mjs && node scripts/fetch-culture-api.mjs && node scripts/fetch-sac.mjs && node scripts/fetch-sejong.mjs && node scripts/fetch-lotte.mjs && node scripts/fetch-leeum.mjs && node scripts/fetch-apma.mjs && node scripts/fetch-seoulmuseum.mjs && node scripts/fetch-daelim.mjs && node scripts/fetch-whanki-sungkok.mjs && node scripts/fetch-ilmin.mjs",
     "serve": "python3 -m http.server 8080"
   }

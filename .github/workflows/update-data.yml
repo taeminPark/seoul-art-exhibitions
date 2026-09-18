@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   update:
@@ -72,3 +73,31 @@ jobs:
           git add data/exhibitions.json
           git diff --cached --quiet || git commit -m "chore: 전시 데이터 갱신"
           git push
+
+      - name: 포스터 이미지 점검
+        id: check_images
+        run: node scripts/check-images.mjs
+        env:
+          REPORT_PATH: ${{ runner.temp }}/broken-images-report.md
+
+      - name: 깨진 이미지 이슈 자동 생성/갱신/종료
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPORT_PATH: ${{ runner.temp }}/broken-images-report.md
+        run: |
+          TITLE="⚠️ 깨진 포스터 이미지 감지"
+          EXISTING=$(gh issue list --state open --limit 500 --json number,title --jq ".[] | select(.title==\"$TITLE\") | .number" | head -n1)
+          if [ "${{ steps.check_images.outputs.broken_count }}" != "0" ]; then
+            if [ -n "$EXISTING" ]; then
+              gh issue edit "$EXISTING" --body-file "$REPORT_PATH"
+              echo "기존 이슈 #$EXISTING 갱신"
+            else
+              gh issue create --title "$TITLE" --body-file "$REPORT_PATH"
+              echo "새 이슈 생성"
+            fi
+          elif [ -n "$EXISTING" ]; then
+            gh issue close "$EXISTING" --comment "재검사 결과 깨진 이미지가 없어 자동으로 닫습니다."
+            echo "이슈 #$EXISTING 자동 종료"
+          else
+            echo "깨진 이미지 없음, 열린 이슈도 없음"
+          fi

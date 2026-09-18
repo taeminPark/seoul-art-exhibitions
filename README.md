@@ -154,6 +154,18 @@ Content-Type: application/json
 
 리포지토리 Settings → Secrets and variables → Actions에 `CULTURE_API_KEY`(국공립 기관 갱신)를 등록해야 해당 스텝이 동작합니다.
 
+## 깨진 포스터 이미지 자동 점검
+
+데이터 소스(art-map, 각 미술관 사이트/API)가 이미지 호스팅 도메인을 바꾸거나 파일을 지워버리면 포스터가 깨진 채로 남을 수 있습니다. `update-data` 워크플로우 마지막 단계에서 `scripts/check-images.mjs`가 `data/exhibitions.json`의 모든 포스터 URL을 실제로 요청해보고, 깨진 게 있으면 리포지토리에 `⚠️ 깨진 포스터 이미지 감지` 이슈를 자동으로 열거나(이미 열려 있으면 최신 목록으로 갱신) 깨진 게 없으면 자동으로 닫습니다. 별도 시크릿이나 봇 등록 없이 기본 `GITHUB_TOKEN`만으로 동작합니다.
+
+로컬에서 바로 점검하고 싶으면:
+
+```
+npm run check-images
+```
+
+앱 쪽에서도 포스터 `<img>`에 `onerror` 처리가 돼 있어서, 이슈가 처리되기 전까지도 깨진 이미지 아이콘 대신 빈 배경으로 조용히 표시됩니다.
+
 ## 배포 (GitHub Pages)
 
 Settings → Pages → Source를 "Deploy from a branch" → `main` / `/(root)`로 설정하면 별도 빌드 없이 그대로 배포됩니다.

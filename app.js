@@ -439,7 +439,7 @@ function renderExhCard(e) {
     <a class="exh-card" data-action="open-detail" data-id="${esc(e.id)}">
       <div class="exh-poster-wrap">
         ${badge}
-        <img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" loading="lazy" />
+        <img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" loading="lazy" onerror="this.style.display='none'" />
       </div>
       <div class="exh-info">
         <div class="exh-title">${esc(e.title)}</div>
@@ -583,7 +583,7 @@ function renderDetail() {
 
   app.innerHTML = h`
     ${renderTopbar({ onBack: true })}
-    <div class="detail-hero"><img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" /></div>
+    <div class="detail-hero"><img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" onerror="this.style.display='none'" /></div>
     <div class="detail-body">
       <div class="detail-status" style="color:${statusColor};">
         <span class="dotpulse" style="background:${statusColor};"></span>${esc(status.label)}
@@ -654,7 +654,9 @@ function renderCalendarScreen() {
                 .map(
                   (e) => h`
             <div class="day-exh-row" data-action="open-detail" data-id="${esc(e.id)}">
-              <img class="day-exh-thumb" src="${esc(e.poster)}" alt="" loading="lazy" />
+              <div class="day-exh-thumb-wrap">
+                <img class="day-exh-thumb" src="${esc(e.poster)}" alt="" loading="lazy" onerror="this.style.display='none'" />
+              </div>
               <div class="day-exh-text">
                 <div class="day-exh-title">${esc(e.title)}</div>
                 <div class="day-exh-venue">${esc(e.venueName)}</div>

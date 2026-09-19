@@ -22,6 +22,14 @@ const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36";
 
 async function checkOnce(url) {
+  // 앱은 GitHub Pages(https)로 배포되므로 http:// 포스터는 실제 이미지가 정상
+  // 응답해도 브라우저가 mixed content로 로딩을 막아 화면에는 안 뜬다. Node의
+  // fetch는 이 정책이 없어 그냥 통과해버리므로(환기미술관 건 재발 원인) 여기서
+  // 먼저 걸러낸다.
+  if (url.startsWith("http://")) {
+    return { ok: false, reason: "http:// URL (https 배포 환경에서 mixed content로 차단됨)" };
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {

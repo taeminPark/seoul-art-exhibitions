@@ -47,6 +47,15 @@ function pad(n) {
   return String(n).padStart(2, "0");
 }
 
+// 두 사이트 모두 HTTPS 인증서가 고장나 있어 포스터 URL이 http://로만 존재한다.
+// 앱은 GitHub Pages(https)로 배포되므로 브라우저가 mixed content로 막아 이미지가
+// 안 보인다. images.weserv.nl(무료, 가입/키 불필요)을 통해 http 원본을 https로
+// 중계해서 저장한다.
+function toHttpsPoster(url) {
+  if (!url || !url.startsWith("http://")) return url;
+  return `https://images.weserv.nl/?url=${encodeURIComponent(url.slice("http://".length))}`;
+}
+
 /* ---------- 환기미술관 ---------- */
 
 async function fetchWhanki(today) {
@@ -73,15 +82,15 @@ async function fetchWhanki(today) {
     const endDate = `${ey}-${em}-${ed}`;
     if (endDate < today) continue;
 
-    const poster = post.yoast_head_json?.og_image?.[0]?.url;
-    if (!poster) continue; // 카드 포맷(이미지+정보)을 지키기 위해 이미지 없는 항목은 제외
+    const rawPoster = post.yoast_head_json?.og_image?.[0]?.url;
+    if (!rawPoster) continue; // 카드 포맷(이미지+정보)을 지키기 위해 이미지 없는 항목은 제외
 
     items.push({
       id: `whanki-${post.id}`,
       title: decodeEntities(post.title.rendered),
       venue: "환기미술관",
       venueName: "환기미술관",
-      poster,
+      poster: toHttpsPoster(rawPoster),
       startDate,
       endDate,
       sourceUrl: post.link,
@@ -138,7 +147,7 @@ async function fetchSungkok(today) {
       title: entry.title,
       venue: "성곡미술관",
       venueName: "성곡미술관",
-      poster: entry.poster,
+      poster: toHttpsPoster(entry.poster),
       startDate,
       endDate,
       sourceUrl: entry.link,

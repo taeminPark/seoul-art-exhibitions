@@ -4,7 +4,7 @@
 
 const ICON_BACK = `<svg width="11" height="19" viewBox="0 0 11 19" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 1.5L1.5 9.5L9.5 17.5"/></svg>`;
 const ICON_SEARCH = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
-const ICON_CLEAR = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.35"/><path d="M8.5 8.5l7 7m0-7l-7 7" stroke="#000" stroke-width="2" stroke-linecap="round"/></svg>`;
+const ICON_CLEAR = `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" opacity="0.35"/><path d="M8.5 8.5l7 7m0-7l-7 7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>`;
 const ICON_EXTERNAL = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
 const TAB_LIST_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.3"/><rect x="14" y="3" width="7" height="5" rx="1.3"/><rect x="14" y="12" width="7" height="9" rx="1.3"/><rect x="3" y="16" width="7" height="5" rx="1.3"/></svg>`;
 const TAB_CAL_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/></svg>`;
@@ -114,9 +114,22 @@ function monthLabelKR(startIso) {
 function exhibitionStatus(e, today = todayISO()) {
   const startsIn = daysBetween(today, e.startDate);
   const endsIn = daysBetween(today, e.endDate);
-  if (startsIn > 0) return { kind: "upcoming", label: `D-${startsIn}`, days: startsIn };
-  if (endsIn <= 7) return { kind: "ending", label: endsIn <= 0 ? "오늘 종료" : `마감 D-${endsIn}`, days: endsIn };
-  return { kind: "ongoing", label: `${-startsIn}일째`, days: endsIn };
+  if (startsIn > 0) return { kind: "upcoming", label: `${startsIn}일 뒤 개막`, days: startsIn };
+  if (endsIn <= 7) return { kind: "ending", label: endsIn <= 0 ? "오늘 마감" : `마감까지 ${endsIn}일`, days: endsIn };
+  return { kind: "ongoing", label: `마감까지 ${endsIn}일`, days: endsIn };
+}
+
+// 전시 기간 전체 중 오늘이 어디쯤인지 보여주는 진행 막대 (예정 전시는 0%)
+function renderRunBar(e, status = exhibitionStatus(e)) {
+  const total = Math.max(1, daysBetween(e.startDate, e.endDate));
+  const elapsed = daysBetween(e.startDate, todayISO());
+  const pct = Math.min(100, Math.max(0, (elapsed / total) * 100));
+  return h`
+    <div class="run run-${status.kind}">
+      <div class="run-track"><span class="run-fill" style="width:${pct.toFixed(1)}%"></span></div>
+      <div class="run-note">${esc(status.label)}</div>
+    </div>
+  `;
 }
 
 /* ---------- grouping ---------- */
@@ -427,24 +440,16 @@ function updateListResults() {
 }
 
 function renderExhCard(e) {
-  const status = exhibitionStatus(e);
-  const badge =
-    status.kind === "upcoming"
-      ? `<span class="exh-badge soon">${esc(status.label)} 오픈</span>`
-      : status.kind === "ending"
-      ? `<span class="exh-badge ending">${esc(status.label)}</span>`
-      : "";
-
   return h`
     <a class="exh-card" data-action="open-detail" data-id="${esc(e.id)}">
       <div class="exh-poster-wrap">
-        ${badge}
         <img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" loading="lazy" onerror="this.style.display='none'" />
       </div>
       <div class="exh-info">
         <div class="exh-title">${esc(e.title)}</div>
         <div class="exh-meta">${esc(e.venueName)}</div>
         <div class="exh-dates">${esc(formatRangeKR(e.startDate, e.endDate))}</div>
+        ${renderRunBar(e)}
       </div>
     </a>
   `;
@@ -530,8 +535,6 @@ function renderDetail() {
     app.innerHTML = h`${renderTopbar({ onBack: true })}<div class="content"><div class="empty-msg">전시 정보를 찾을 수 없습니다.</div></div>`;
     return;
   }
-  const status = exhibitionStatus(e);
-  const statusColor = status.kind === "ending" ? "var(--red)" : status.kind === "upcoming" ? "var(--orange)" : "var(--green)";
 
   const review = e.reviewSummary;
   const reviewBody = !review || !review.posts || !review.posts.length
@@ -554,13 +557,13 @@ function renderDetail() {
   // art-map은 상세정보를 원문 링크로만 연결하지만, 문화포털 API로 들어온 항목은
   // 관람료/운영시간/설명까지 표준 필드로 갖고 있어서 앱 안에서 바로 보여줄 수 있다.
   const extraRows = [
-    e.hours ? `<div class="detail-row"><span class="icon">🕒</span><span>${esc(e.hours)}</span></div>` : "",
-    e.admission ? `<div class="detail-row"><span class="icon">🎟️</span><span>${esc(e.admission)}</span></div>` : "",
-    e.ticketInfo ? `<div class="detail-row"><span class="icon">🔖</span><span>${esc(e.ticketInfo)}</span></div>` : "",
+    e.hours ? `<dt>운영</dt><dd>${esc(e.hours)}</dd>` : "",
+    e.admission ? `<dt>관람료</dt><dd>${esc(e.admission)}</dd>` : "",
+    e.ticketInfo ? `<dt>예매</dt><dd>${esc(e.ticketInfo)}</dd>` : "",
   ].join("");
 
   const descriptionBlock = e.description
-    ? h`<div class="section-heading">전시 소개</div><div class="review-card"><div class="review-summary">${esc(e.description)}</div></div>`
+    ? h`<div class="section-heading">전시 소개</div><p class="detail-desc">${esc(e.description)}</p>`
     : "";
 
   const HOMEPAGE_SOURCES = new Set([
@@ -585,13 +588,13 @@ function renderDetail() {
     ${renderTopbar({ onBack: true })}
     <div class="detail-hero"><img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" onerror="this.style.display='none'" /></div>
     <div class="detail-body">
-      <div class="detail-status" style="color:${statusColor};">
-        <span class="dotpulse" style="background:${statusColor};"></span>${esc(status.label)}
-      </div>
       <h2 class="detail-title">${esc(e.title)}</h2>
-      <div class="detail-row"><span class="icon">📍</span><span>${esc(e.venue)}</span></div>
-      <div class="detail-row"><span class="icon">📅</span><span>${esc(formatRangeKR(e.startDate, e.endDate))}</span></div>
-      ${extraRows}
+      ${renderRunBar(e)}
+      <dl class="detail-rows">
+        <dt>장소</dt><dd>${esc(e.venue)}</dd>
+        <dt>기간</dt><dd>${esc(formatRangeKR(e.startDate, e.endDate))}</dd>
+        ${extraRows}
+      </dl>
 
       ${externalBtn}
 
@@ -674,9 +677,9 @@ function renderCalendarScreen() {
     ${renderTopbar({ title: "캘린더" })}
     <div class="content">
       <div class="cal-nav">
-        <button class="iconbtn" data-action="cal-prev">‹</button>
+        <button class="iconbtn" data-action="cal-prev" aria-label="이전 달">‹</button>
         <span class="cal-month-label">${y}년 ${m + 1}월</span>
-        <button class="iconbtn" data-action="cal-next">›</button>
+        <button class="iconbtn" data-action="cal-next" aria-label="다음 달">›</button>
       </div>
       <div class="cal-weekdays">${WEEKDAY_LABELS.map((d) => `<span>${d}</span>`).join("")}</div>
       <div class="cal-grid">${cells}</div>

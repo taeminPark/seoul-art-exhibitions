@@ -64,17 +64,27 @@ function decodeEntities(str) {
     .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)))
     .replace(/&([a-zA-Z]+);/g, (m, name) => NAMED_ENTITIES[name] ?? m);
 }
-function stripHtml(str) {
+// 2차 정리에서 지울 실제 HTML 태그 이름. <작품명>, <Object Trouble> 같은 문장부호용
+// 꺾쇠까지 지우지 않도록 아무 <...>가 아니라 이 이름들만 태그로 본다.
+const HTML_TAG_RE =
+  /<\/?(?:p|br|span|div|font|strong|b|i|em|u|s|strike|small|big|sup|sub|mark|center|a|img|hr|h[1-6]|ul|ol|li|dl|dt|dd|table|thead|tbody|tfoot|tr|td|th|caption|colgroup|col|blockquote|figure|figcaption|section|article|header|footer|iframe|video|source|o:p)(?:\s[^<>]*)?\/?>/gi;
+
+function removeBlocks(str) {
   // <style>/<script> 블록은 내용까지 통째로 버려야 한다 — 태그만 벗기면
   // CSS/JS 텍스트가 "전시소개"에 그대로 노출된다 (바람의 길목 DMZ 등 일부 항목).
-  const withoutBlocks = str
+  return str
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<script[\s\S]*?<\/script>/gi, " ");
+}
+function stripHtml(str) {
   // 태그를 먼저 벗기고 엔티티는 그 다음에 디코딩한다. 순서를 바꾸면
   // 원문 텍스트에 있던 &lt;/&gt;(실제로는 문장부호로 보여줄 의도)가
   // 진짜 "<"/">"로 풀린 뒤 다음 단계에서 태그로 오인돼 잘려나간다.
-  const withoutTags = withoutBlocks.replace(/<[^>]*>/g, " ");
-  return decodeEntities(withoutTags).replace(/\s+/g, " ").trim();
+  const once = decodeEntities(removeBlocks(str).replace(/<[^>]*>/g, " "));
+  // 일부 항목(국립현대미술관 등)은 HTML을 한 번 더 인코딩해서(&amp;lt;p ...&amp;gt;) 보내서,
+  // 한 번 디코딩한 뒤에야 <p style="...">, &ndash; 같은 게 드러난다. 같은 순서로 한 번 더 정리한다.
+  const twice = decodeEntities(removeBlocks(once).replace(HTML_TAG_RE, " "));
+  return twice.replace(/\s+/g, " ").trim();
 }
 
 function field(itemXml, name) {

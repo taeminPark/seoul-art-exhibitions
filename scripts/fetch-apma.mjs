@@ -51,7 +51,7 @@ async function main() {
   const listHtml = await fetchText(`${BASE}/contents/exhibition/index.do`);
 
   const topItem = listHtml.match(
-    /<li class="photoLst">\s*<a href="\/contents\/exhibition\/(\d+)\/view\.do">[\s\S]*?data-src="([^"]+)"/
+    /<li class="photoLst">\s*<a href="\/contents\/exhibition\/(\d+)\/view\.do">[\s\S]*?(?:data-)?src="([^"]+)"/
   );
   if (!topItem) {
     console.log("  -> 전시 목록 첫 항목을 찾지 못했습니다 (사이트 구조가 바뀌었을 수 있음).");
@@ -69,7 +69,7 @@ async function main() {
   const title = decodeJsUnicode(titleMatch[1]).trim();
 
   const placeMatch = detailHtml.match(
-    /"place":"(\d{4})\.(\d{2})\.(\d{2})\([^)]*\)\s*~\s*(\d{4})\.(\d{2})\.(\d{2})\([^)]*\)\s*\|?\s*([^"]*)"/
+    /"place":"(\d{4})\.\s*(\d{2})\.\s*(\d{2})\.?\s*\([^)]*\)\s*[~-]\s*(\d{4})\.\s*(\d{2})\.\s*(\d{2})\.?\s*\([^)]*\)\s*\|?\s*([^"]*)"/
   );
   if (!placeMatch) {
     console.log("  -> 전시 기간(place 필드)을 찾지 못해 건너뜁니다.");

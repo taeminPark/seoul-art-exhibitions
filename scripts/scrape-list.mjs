@@ -14,7 +14,7 @@ const UA =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1";
 
 const ITEM_RE =
-  /<a href='view\.php\?idx=(\d+)'>[\s\S]*?<img src='([^']+)'[\s\S]*?<span id='ttl_\d+'>([\s\S]*?)<\/span><br\/><span>([^<]*)<\/span><br\/><span>([\d.]+)\s*~\s*([\d.]+)<\/span>/g;
+  /<a href='view\.php\?idx=(\d+)'>[\s\S]*?<img [^>]*?src='([^']+)'[\s\S]*?<span id='ttl_\d+'>([\s\S]*?)<\/span><br\/><span>([^<]*)<\/span><br\/><span>([\d.]+)\s*~\s*([\d.]+)<\/span>/g;
 
 function decodeEntities(str) {
   return str

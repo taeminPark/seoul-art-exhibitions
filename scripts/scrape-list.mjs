@@ -104,6 +104,13 @@ async function main() {
   const byId = new Map();
   for (const item of [...ongoing, ...upcoming]) byId.set(item.id, item);
 
+  // 서울 전시가 0건일 리는 없으므로 사이트 구조 변경으로 파싱이 깨진 것으로 본다.
+  // 여기서 그대로 저장하면 기존 데이터가 빈 배열로 덮어써지므로, 실패시켜서
+  // 워크플로우의 커밋 단계까지 가지 않게 한다 (기존 데이터 보존).
+  if (byId.size === 0) {
+    throw new Error("art-map에서 0건이 수집됐습니다. 사이트 구조가 바뀌었을 수 있어 저장하지 않고 중단합니다.");
+  }
+
   // 기존 파일에 있던 reviewSummary(리뷰 요약)는 별도 절차로 채운 데이터이므로 보존한다.
   let previous = [];
   try {

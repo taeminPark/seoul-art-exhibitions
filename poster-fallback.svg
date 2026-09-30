@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="500" viewBox="0 0 400 500">
+  <!-- 포스터를 불러오지 못했을 때 거는 빈 액자. 벽보다 한 톤 밝은 캡션 종이 색(style.css의 label 변수). -->
+  <rect width="400" height="500" fill="#f6f6f3"/>
+  <rect x="28" y="28" width="344" height="444" fill="none" stroke="#cbccc6" stroke-width="2"/>
+  <text x="200" y="258" text-anchor="middle" font-family="AppleMyungjo, 'Nanum Myeongjo', serif" font-size="22" fill="#8b8c87">포스터 준비 중</text>
+</svg>

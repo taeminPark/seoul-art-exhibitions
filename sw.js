@@ -7,6 +7,7 @@ const ASSETS = [
   "./manifest.json",
   "./icon-180.png",
   "./icon-512.png",
+  "./poster-fallback.svg",
   "./data/exhibitions.json",
 ];
 

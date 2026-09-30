@@ -194,6 +194,13 @@ function groupByMonth(list) {
 function h(strings, ...values) {
   return strings.reduce((acc, s, i) => acc + s + (values[i] ?? ""), "");
 }
+// 포스터가 없거나 불러오지 못하면 숨기지 않고 빈 액자 이미지를 건다 (전시 정보 자체는 그대로 보여준다).
+const POSTER_FALLBACK = "./poster-fallback.svg";
+function posterSrc(e) {
+  return esc(e.poster || POSTER_FALLBACK);
+}
+const POSTER_ONERROR = `this.onerror=null;this.src='${POSTER_FALLBACK}'`;
+
 function esc(str) {
   const d = document.createElement("div");
   d.textContent = str ?? "";
@@ -443,7 +450,7 @@ function renderExhCard(e) {
   return h`
     <a class="exh-card" data-action="open-detail" data-id="${esc(e.id)}">
       <div class="exh-poster-wrap">
-        <img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" loading="lazy" onerror="this.style.display='none'" />
+        <img src="${posterSrc(e)}" alt="${esc(e.title)} 포스터" loading="lazy" onerror="${POSTER_ONERROR}" />
       </div>
       <div class="exh-info">
         <div class="exh-title">${esc(e.title)}</div>
@@ -586,7 +593,7 @@ function renderDetail() {
 
   app.innerHTML = h`
     ${renderTopbar({ onBack: true })}
-    <div class="detail-hero"><img src="${esc(e.poster)}" alt="${esc(e.title)} 포스터" onerror="this.style.display='none'" /></div>
+    <div class="detail-hero"><img src="${posterSrc(e)}" alt="${esc(e.title)} 포스터" onerror="${POSTER_ONERROR}" /></div>
     <div class="detail-body">
       <h2 class="detail-title">${esc(e.title)}</h2>
       ${renderRunBar(e)}
@@ -658,7 +665,7 @@ function renderCalendarScreen() {
                   (e) => h`
             <div class="day-exh-row" data-action="open-detail" data-id="${esc(e.id)}">
               <div class="day-exh-thumb-wrap">
-                <img class="day-exh-thumb" src="${esc(e.poster)}" alt="" loading="lazy" onerror="this.style.display='none'" />
+                <img class="day-exh-thumb" src="${posterSrc(e)}" alt="" loading="lazy" onerror="${POSTER_ONERROR}" />
               </div>
               <div class="day-exh-text">
                 <div class="day-exh-title">${esc(e.title)}</div>

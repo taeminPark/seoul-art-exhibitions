@@ -68,18 +68,6 @@ async function fetchAllItems() {
   return items;
 }
 
-// 이 사이트는 이미지 URL에 HEAD 요청을 보내면 정상 이미지에도 401을 돌려주는
-// 경우가 있어서, HEAD 없이 바로 GET으로 확인한다 (문화포털 스크립트의
-// 405 한정 재시도보다 넓게 잡아야 한다).
-async function isImageReachable(url) {
-  try {
-    const res = await fetch(url, { method: "GET", headers: { "User-Agent": UA } });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
 async function main() {
   console.log("예술의전당 전시장 프로그램 목록 수집 중...");
   const rawItems = await fetchAllItems();
@@ -117,15 +105,8 @@ async function main() {
       reviewSummary: null,
     });
   }
-  console.log(`  -> 날짜/이미지 필드 있음 ${parsed.length}건, 이미지 URL 확인 중...`);
-
-  const withValidImage = [];
-  for (const item of parsed) {
-    if (await isImageReachable(item.poster)) withValidImage.push(item);
-  }
-  if (withValidImage.length !== parsed.length) {
-    console.log(`  -> 이미지 URL이 깨진 항목 ${parsed.length - withValidImage.length}건 제외`);
-  }
+  // 이미지가 실제로 안 뜨면 앱이 대체 이미지를 보여주므로, 여기서 이미지 확인 실패로 전시를 빼지 않는다.
+  console.log(`  -> 날짜/이미지 필드 있음 ${parsed.length}건`);
 
   let existing = [];
   try {
@@ -136,8 +117,8 @@ async function main() {
 
   // 같은 전시가 art-map/문화포털 API에도 이미 있으면 그쪽을 우선하고 건너뛴다.
   const existingTitles = new Set(existing.map((e) => normalizeTitle(e.title)));
-  const newOnes = withValidImage.filter((e) => !existingTitles.has(normalizeTitle(e.title)));
-  console.log(`  -> 기존 데이터와 중복 제외 ${withValidImage.length - newOnes.length}건, 신규 ${newOnes.length}건 추가`);
+  const newOnes = parsed.filter((e) => !existingTitles.has(normalizeTitle(e.title)));
+  console.log(`  -> 기존 데이터와 중복 제외 ${parsed.length - newOnes.length}건, 신규 ${newOnes.length}건 추가`);
 
   const merged = [...existing, ...newOnes].sort((a, b) => a.startDate.localeCompare(b.startDate));
   await writeFile(OUT_PATH, JSON.stringify(merged, null, 2) + "\n", "utf8");

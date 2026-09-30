@@ -120,21 +120,6 @@ function isSeoulVenue(inst, eventSite) {
   return SEOUL_INSTITUTIONS.has(inst);
 }
 
-async function isImageReachable(url) {
-  try {
-    const res = await fetch(url, { method: "HEAD" });
-    if (res.ok) return true;
-    if (res.status === 405) {
-      // 일부 서버가 HEAD를 막아둬서 GET으로 한 번 더 확인한다.
-      const res2 = await fetch(url, { method: "GET" });
-      return res2.ok;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
-
 function normalizeTitle(title) {
   return title.replace(/[《》<>〈〉[\]「」『』\s]/g, "").toLowerCase();
 }
@@ -195,22 +180,15 @@ async function main() {
       reviewSummary: null,
     });
   }
-  console.log(`  -> 서울 + 현재/예정 + 이미지 필드 있음 ${parsed.length}건, 이미지 URL 확인 중...`);
-
-  // IMAGE_OBJECT 필드가 있어도 실제로는 죽은 링크(예전 기록이 방치된 경우)인
-  // 경우가 있어서, 살아있는 이미지인지 직접 확인한다.
-  const withValidImage = [];
-  for (const item of parsed) {
-    if (await isImageReachable(item.poster)) withValidImage.push(item);
-  }
-  if (withValidImage.length !== parsed.length) {
-    console.log(`  -> 이미지 URL이 깨진 항목 ${parsed.length - withValidImage.length}건 제외`);
-  }
+  // 이미지 URL이 살아있는지는 여기서 확인하지 않는다. 수집 서버(GitHub Actions)에서만
+  // 접속이 막히는 경우(국립현대미술관 등)가 있어 멀쩡한 전시가 통째로 빠졌었다.
+  // 이미지가 실제로 안 뜨면 앱이 대체 이미지(poster-fallback.svg)를 보여준다.
+  console.log(`  -> 서울 + 현재/예정 + 이미지 필드 있음 ${parsed.length}건`);
 
   // 같은 전시가 (예전 기록 + 최신 기록 등으로) exhId 자체가 중복되기도 하고,
   // 반대로 exhId는 다른데 제목이 같은 경우도 있어서 두 단계로 정리한다.
   const seenIds = new Set();
-  const byId = withValidImage.filter((e) => {
+  const byId = parsed.filter((e) => {
     if (seenIds.has(e.id)) return false;
     seenIds.add(e.id);
     return true;
@@ -223,8 +201,8 @@ async function main() {
     seenInBatch.add(key);
     return true;
   });
-  if (deduped.length !== withValidImage.length) {
-    console.log(`  -> 같은 API 내 중복(exhId/제목) ${withValidImage.length - deduped.length}건 정리`);
+  if (deduped.length !== parsed.length) {
+    console.log(`  -> 같은 API 내 중복(exhId/제목) ${parsed.length - deduped.length}건 정리`);
   }
 
   let existing = [];

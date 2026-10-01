@@ -207,6 +207,12 @@ button {
 }
 
 .exh-info { padding: 22px 8% 0; }
+.exh-title-row, .detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.exh-title-row .exh-title, .detail-title-row .detail-title { flex: 1; min-width: 0; }
 .exh-title {
   font-family: var(--serif);
   font-size: 20px;
@@ -266,6 +272,95 @@ button {
   padding: 60px 20px;
   line-height: 1.6;
 }
+
+/* ---------- heart: 관심 전시 담기 ---------- */
+/* 포스터는 작품이라 그 위엔 아무것도 올리지 않고, 캡션 옆에 둔다.
+   레드닷은 "마감 임박" 전용이라 하트는 먹색으로만 채운다. */
+.heart-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -9px -11px -9px 0;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color var(--fast), transform var(--fast);
+}
+.heart-btn svg { fill: transparent; transition: fill var(--fast); }
+.heart-btn.on { color: var(--ink); }
+.heart-btn.on svg { fill: currentColor; }
+.heart-btn:active { transform: scale(0.88); }
+/* 상세 화면: 공유와 하트를 한 묶음으로 제목 오른쪽에 둔다 */
+.detail-actions { display: flex; flex-shrink: 0; margin: -9px -11px -9px 0; }
+.detail-actions .heart-btn { margin: 0; width: 40px; }
+.detail-actions .share-btn { width: 34px; }
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--ink-3);
+  transition: transform var(--fast);
+}
+.share-btn:active { transform: scale(0.88); }
+.share-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: -6px; border-radius: 50%; }
+.heart-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: -6px; border-radius: 50%; }
+@media (prefers-reduced-motion: no-preference) {
+  .heart-btn.pop svg { animation: heart-pop 0.36s cubic-bezier(0.32, 0.72, 0, 1); }
+  @keyframes heart-pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.28); }
+    100% { transform: scale(1); }
+  }
+}
+
+.saved-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 90px 20px 40px;
+  text-align: center;
+  color: var(--ink-2);
+}
+.saved-empty-heart { color: var(--ink-3); }
+.saved-empty-heart svg { width: 34px; height: 34px; fill: transparent; stroke-width: 1.4; }
+.saved-empty p {
+  font-family: var(--serif);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--ink);
+  margin: 18px 0 26px;
+  word-break: keep-all;
+}
+.saved-empty-btn {
+  padding: 4px 0 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  border-bottom: 2px solid var(--ink);
+  cursor: pointer;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  z-index: 60;
+  padding: 11px 18px;
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--label);
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  transition: opacity var(--spring), transform var(--spring);
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ---------- detail screen ---------- */
 

@@ -8,8 +8,13 @@ const ICON_CLEAR = `<svg width="15" height="15" viewBox="0 0 24 24" fill="curren
 const ICON_EXTERNAL = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`;
 const TAB_LIST_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.3"/><rect x="14" y="3" width="7" height="5" rx="1.3"/><rect x="14" y="12" width="7" height="9" rx="1.3"/><rect x="3" y="16" width="7" height="5" rx="1.3"/></svg>`;
 const TAB_CAL_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2.5" x2="8" y2="6.5"/><line x1="16" y1="2.5" x2="16" y2="6.5"/></svg>`;
-const TAB_FAV_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.2-4.5-9.8-9C.7 8.2 1.8 4 5.8 4c2.1 0 3.6 1.2 4.6 2.5.5.6.6.9 1.6.9s1.1-.3 1.6-.9C14.6 5.2 16.1 4 18.2 4c4 0 5.1 4.2 3.6 7.5-2.6 4.5-9.8 9-9.8 9z"/></svg>`;
+const HEART_PATH = "M12 20.5s-7.2-4.5-9.8-9C.7 8.2 1.8 4 5.8 4c2.1 0 3.6 1.2 4.6 2.5.5.6.6.9 1.6.9s1.1-.3 1.6-.9C14.6 5.2 16.1 4 18.2 4c4 0 5.1 4.2 3.6 7.5-2.6 4.5-9.8 9-9.8 9z";
+const TAB_SAVED_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${HEART_PATH}"/></svg>`;
+const TAB_FAV_ICON = `<svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 4l9 5.5"/><line x1="4" y1="20" x2="20" y2="20"/><line x1="6.5" y1="11.5" x2="6.5" y2="17"/><line x1="12" y1="11.5" x2="12" y2="17"/><line x1="17.5" y1="11.5" x2="17.5" y2="17"/></svg>`;
+// 하트 하나로 빈/찬 상태를 모두 그린다. 찬 상태는 CSS(.heart-btn.on)에서 fill로 채운다.
+const ICON_HEART = `<svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${HEART_PATH}"/></svg>`;
 const ICON_SETTINGS = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+const ICON_SHARE = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><polyline points="7.5 7.5 12 3 16.5 7.5"/><path d="M8 10.5H6a2 2 0 0 0-2 2V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6.5a2 2 0 0 0-2-2h-2"/></svg>`;
 const ICON_CHECK = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -17,8 +22,8 @@ const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 /* ---------- state ---------- */
 
 let S = {
-  tab: "list", // 'list' | 'calendar' | 'favorites'
-  screen: "list", // 'list' | 'calendar' | 'favorites' | 'detail' | 'venue-picker'
+  tab: "list", // 'list' | 'calendar' | 'saved' | 'favorites'
+  screen: "list", // 'list' | 'calendar' | 'saved' | 'favorites' | 'detail' | 'venue-picker'
   listFilter: "all", // 'all' | 'ongoing' | 'upcoming'
   favFilter: "all", // 'all' | 'ongoing' | 'upcoming' — '내 미술관' 탭 전용 (전시 탭 필터와 별개)
   searchQuery: "",
@@ -28,12 +33,14 @@ let S = {
   calSelected: null,
   exhibitions: [],
   favoriteVenues: [], // 등록한 관심 미술관의 venueName 목록
+  savedIds: [], // 하트로 담아둔 관심 전시의 id 목록
   loaded: false,
   loadError: false,
 };
 
 const LS_CACHE_KEY = "sa_exhibitions_cache_v1";
 const LS_FAVORITES_KEY = "sa_favorite_venues_v1";
+const LS_SAVED_KEY = "sa_saved_exhibitions_v1";
 
 /* ---------- data loading ---------- */
 
@@ -175,6 +182,16 @@ function toggleFavoriteVenue(name) {
   saveJSON(LS_FAVORITES_KEY, S.favoriteVenues);
 }
 
+function isSaved(id) {
+  return S.savedIds.includes(id);
+}
+function toggleSaved(id) {
+  const idx = S.savedIds.indexOf(id);
+  if (idx === -1) S.savedIds.push(id);
+  else S.savedIds.splice(idx, 1);
+  saveJSON(LS_SAVED_KEY, S.savedIds);
+}
+
 function groupByMonth(list) {
   const groups = [];
   let currentLabel = null;
@@ -251,6 +268,8 @@ function renderScreen() {
     renderVenuePickerScreen();
   } else if (S.screen === "calendar") {
     renderCalendarScreen();
+  } else if (S.screen === "saved") {
+    renderSavedScreen();
   } else if (S.screen === "favorites") {
     renderFavoritesScreen();
   } else {
@@ -329,6 +348,9 @@ function renderTabbar() {
       </button>
       <button class="tab-btn ${S.tab === "calendar" ? "active" : ""}" data-action="tab-calendar">
         <span class="tab-icon">${TAB_CAL_ICON}</span>캘린더
+      </button>
+      <button class="tab-btn ${S.tab === "saved" ? "active" : ""}" data-action="tab-saved">
+        <span class="tab-icon">${TAB_SAVED_ICON}</span>관심 전시
       </button>
       <button class="tab-btn ${S.tab === "favorites" ? "active" : ""}" data-action="tab-favorites">
         <span class="tab-icon">${TAB_FAV_ICON}</span>내 미술관
@@ -453,12 +475,49 @@ function renderExhCard(e) {
         <img src="${posterSrc(e)}" alt="${esc(e.title)} 포스터" loading="lazy" onerror="${POSTER_ONERROR}" />
       </div>
       <div class="exh-info">
-        <div class="exh-title">${esc(e.title)}</div>
+        <div class="exh-title-row">
+          <div class="exh-title">${esc(e.title)}</div>
+          ${renderHeartBtn(e)}
+        </div>
         <div class="exh-meta">${esc(e.venueName)}</div>
         <div class="exh-dates">${esc(formatRangeKR(e.startDate, e.endDate))}</div>
         ${renderRunBar(e)}
       </div>
     </a>
+  `;
+}
+
+function renderHeartBtn(e) {
+  const on = isSaved(e.id);
+  return h`<button class="heart-btn ${on ? "on" : ""}" data-action="toggle-saved" data-id="${esc(e.id)}" aria-pressed="${on}" aria-label="관심 전시에 담기">${ICON_HEART}</button>`;
+}
+
+/* ---------- saved (관심 전시) screen ---------- */
+
+// 관심 전시는 "놓치지 않게" 보는 목록이라 개막월이 아니라 지금 볼 수 있는지로
+// 나누고, 전시 중인 것은 마감이 가까운 순서로 둔다. 이미 끝난 전시는 보여주지 않는다.
+function renderSavedScreen() {
+  const today = todayISO();
+  const saved = S.exhibitions.filter((e) => isSaved(e.id) && e.endDate >= today);
+  const ongoing = saved.filter((e) => e.startDate <= today).sort((a, b) => a.endDate.localeCompare(b.endDate));
+  const upcoming = saved.filter((e) => e.startDate > today).sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const section = (label, items) =>
+    items.length ? h`<div class="month-heading">${label}</div>${items.map((e) => renderExhCard(e)).join("")}` : "";
+
+  app.innerHTML = h`
+    ${renderTopbar({ title: "관심 전시", sub: saved.length ? `${saved.length}개 전시` : "" })}
+    <div class="content">
+      ${
+        saved.length === 0
+          ? h`<div class="saved-empty">
+              <span class="saved-empty-heart">${ICON_HEART}</span>
+              <p>전시 목록에서 하트를 눌러<br/>보고 싶은 전시를 담아 두세요.</p>
+              <button class="saved-empty-btn" data-action="tab-list">전시 둘러보기</button>
+            </div>`
+          : section("지금 볼 수 있는 전시", ongoing) + section("개막 예정", upcoming)
+      }
+    </div>
+    ${renderTabbar()}
   `;
 }
 
@@ -595,7 +654,13 @@ function renderDetail() {
     ${renderTopbar({ onBack: true })}
     <div class="detail-hero"><img src="${posterSrc(e)}" alt="${esc(e.title)} 포스터" onerror="${POSTER_ONERROR}" /></div>
     <div class="detail-body">
-      <h2 class="detail-title">${esc(e.title)}</h2>
+      <div class="detail-title-row">
+        <h2 class="detail-title">${esc(e.title)}</h2>
+        <div class="detail-actions">
+          <button class="share-btn" data-action="share" data-id="${esc(e.id)}" aria-label="전시 공유">${ICON_SHARE}</button>
+          ${renderHeartBtn(e)}
+        </div>
+      </div>
       ${renderRunBar(e)}
       <dl class="detail-rows">
         <dt>장소</dt><dd>${esc(e.venue)}</dd>
@@ -674,6 +739,7 @@ function renderCalendarScreen() {
                 <div class="day-exh-title">${esc(e.title)}</div>
                 <div class="day-exh-venue">${esc(e.venueName)}</div>
               </div>
+              ${renderHeartBtn(e)}
             </div>
           `
                 )
@@ -796,6 +862,51 @@ function openVenuePicker() {
   render();
   window.scrollTo(0, 0);
 }
+/* ---------- share ---------- */
+
+// 공유 링크(?e=전시ID)로 들어오면 그 전시 상세가 바로 열린다 (boot 참고).
+function shareUrl(id) {
+  return `${location.origin}${location.pathname.replace(/index\.html$/, "")}?e=${encodeURIComponent(id)}`;
+}
+
+// 아이폰은 시스템 공유창(카카오톡·메시지·링크 복사 등)을 띄우고,
+// 공유창이 없는 브라우저(PC 등)에서는 링크를 클립보드에 복사한다.
+async function shareExhibition(id) {
+  const e = S.exhibitions.find((x) => x.id === id);
+  if (!e) return;
+  const url = shareUrl(id);
+  const text = `${e.title}\n${e.venueName}, ${formatRangeKR(e.startDate, e.endDate)}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: e.title, text, url });
+    } catch {
+      /* 공유창을 그냥 닫은 경우(AbortError) — 아무것도 하지 않는다 */
+    }
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    showToast("링크를 복사했어요");
+  } catch {
+    showToast("링크를 복사하지 못했어요");
+  }
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  let el = document.querySelector(".toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.className = "toast";
+    el.setAttribute("role", "status");
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1800);
+}
+
 function goBack() {
   history.back();
 }
@@ -809,7 +920,7 @@ function switchTab(tab) {
 }
 
 window.addEventListener("popstate", (e) => {
-  const state = e.state || { screen: S.tab === "calendar" ? "calendar" : S.tab === "favorites" ? "favorites" : "list" };
+  const state = e.state || { screen: S.tab };
   const enteringDetail = state.screen === "detail";
   const enteringPicker = state.screen === "venue-picker";
   const wasInDetail = S.screen === "detail";
@@ -824,7 +935,7 @@ window.addEventListener("popstate", (e) => {
   } else if (enteringPicker) {
     S.screen = "venue-picker";
   } else {
-    S.tab = state.screen === "calendar" ? "calendar" : state.screen === "favorites" ? "favorites" : "list";
+    S.tab = ["calendar", "saved", "favorites"].includes(state.screen) ? state.screen : "list";
     S.screen = S.tab;
     S.detailId = null;
   }
@@ -865,11 +976,31 @@ app.addEventListener("click", (e) => {
     case "tab-calendar":
       switchTab("calendar");
       break;
+    case "tab-saved":
+      switchTab("saved");
+      break;
     case "tab-favorites":
       switchTab("favorites");
       break;
+    case "toggle-saved": {
+      // 화면을 다시 그리지 않고 같은 전시의 하트만 바꾼다 — 스크롤 위치와 포스터가
+      // 그대로 유지되고, 관심 전시 탭에서 실수로 뺀 전시도 바로 사라지지 않아 다시 담을 수 있다.
+      toggleSaved(el.dataset.id);
+      const on = isSaved(el.dataset.id);
+      for (const btn of app.querySelectorAll(`.heart-btn[data-id="${CSS.escape(el.dataset.id)}"]`)) {
+        btn.classList.toggle("on", on);
+        btn.setAttribute("aria-pressed", on);
+      }
+      el.classList.remove("pop");
+      void el.offsetWidth; // 연속으로 눌러도 애니메이션이 매번 다시 재생되도록
+      if (on) el.classList.add("pop");
+      break;
+    }
     case "open-detail":
       openDetail(el.dataset.id);
+      break;
+    case "share":
+      shareExhibition(el.dataset.id);
       break;
     case "open-venue-picker":
       openVenuePicker();
@@ -945,8 +1076,21 @@ app.addEventListener("input", (e) => {
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
 S.favoriteVenues = loadJSON(LS_FAVORITES_KEY, []);
+S.savedIds = loadJSON(LS_SAVED_KEY, []);
 
-history.replaceState({ screen: S.tab }, "");
+// 공유 링크로 들어온 경우: 주소의 ?e=는 지우고, 목록 위에 상세를 쌓아서 연다
+// (그래야 뒤로가기로 앱 목록에 자연스럽게 돌아간다).
+const sharedId = new URLSearchParams(location.search).get("e");
+if (sharedId) {
+  const baseUrl = location.pathname;
+  history.replaceState({ screen: S.tab }, "", baseUrl);
+  history.pushState({ screen: "detail", id: sharedId }, "", baseUrl);
+  S.screen = "detail";
+  S.detailId = sharedId;
+  lastScreen = "detail";
+} else {
+  history.replaceState({ screen: S.tab }, "");
+}
 render();
 loadExhibitions();
 

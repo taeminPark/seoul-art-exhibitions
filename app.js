@@ -655,8 +655,11 @@ function renderCalendarScreen() {
     sheet = h`
       <div class="day-sheet-scrim ${animClass}" data-action="close-day-sheet"></div>
       <div class="day-sheet ${animClass}">
-        <div class="day-sheet-handle"></div>
-        <h3>${esc(label)} 관람 가능한 전시 ${items.length ? `(${items.length})` : ""}</h3>
+        <div class="day-sheet-header">
+          <div class="day-sheet-handle"></div>
+          <h3>${esc(label)} 관람 가능한 전시 ${items.length ? `(${items.length})` : ""}</h3>
+        </div>
+        <div class="day-sheet-list">
         ${
           items.length === 0
             ? `<div class="empty-msg" style="padding:20px 4px;">이 날짜에 열리는 전시가 없습니다</div>`
@@ -676,6 +679,7 @@ function renderCalendarScreen() {
                 )
                 .join("")
         }
+        </div>
       </div>
     `;
   }
@@ -699,12 +703,25 @@ function renderCalendarScreen() {
   if (S.calSelected) attachSheetDragHandlers();
 }
 
-/* 시트 핸들을 아래로 끌면 손가락을 따라 1:1로 내려가다가, 일정 거리 이상
+/* 시트 상단(핸들+제목)을 아래로 끌면 손가락을 따라 1:1로 내려가다가, 일정 거리 이상
    끌었을 때만 닫힌다 (apple-design의 direct-manipulation/interruptibility 원칙). */
 function attachSheetDragHandlers() {
-  const handle = app.querySelector(".day-sheet-handle");
+  const handle = app.querySelector(".day-sheet-header");
   const sheet = app.querySelector(".day-sheet");
+  const list = app.querySelector(".day-sheet-list");
   if (!handle || !sheet) return;
+
+  /* iOS는 스크롤할 게 없는 곳(짧은 목록, 스크롤 끝)에서 끄는 손가락을 페이지
+     전체로 넘겨 화면 위쪽까지 고무줄처럼 끌려 내려간다. 시트 안에서는 목록이
+     실제로 스크롤될 수 있을 때만 기본 동작을 허용하고 나머지는 막는다. */
+  sheet.addEventListener(
+    "touchmove",
+    (e) => {
+      const inList = list && list.contains(e.target);
+      if (!inList || list.scrollHeight <= list.clientHeight) e.preventDefault();
+    },
+    { passive: false }
+  );
 
   let dragStartY = null;
   let dragDy = 0;

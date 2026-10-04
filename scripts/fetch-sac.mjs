@@ -14,6 +14,7 @@
 // 사용법: node scripts/fetch-sac.mjs
 
 import { readFile, writeFile } from "node:fs/promises";
+import { mergeSource } from "./lib/merge-source.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -33,12 +34,6 @@ const ING_STATE_CURRENT = "1";
 function toIsoDate(dotted) {
   const [y, m, d] = dotted.split(".").map((s) => s.trim());
   return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-}
-
-// 다른 소스와 같은 전시가 중복으로 올라오는 걸 막기 위한 제목 정규화
-// (fetch-culture-api.mjs와 동일한 규칙).
-function normalizeTitle(title) {
-  return title.replace(/[《》<>〈〉[\]「」『』\s]/g, "").toLowerCase();
 }
 
 function normalizeAdmission(price) {
@@ -115,12 +110,10 @@ async function main() {
     // 다른 수집 스크립트가 먼저 실행되지 않았으면 이 소스만으로 시작
   }
 
-  // 같은 전시가 art-map/문화포털 API에도 이미 있으면 그쪽을 우선하고 건너뛴다.
-  const existingTitles = new Set(existing.map((e) => normalizeTitle(e.title)));
-  const newOnes = parsed.filter((e) => !existingTitles.has(normalizeTitle(e.title)));
-  console.log(`  -> 기존 데이터와 중복 제외 ${parsed.length - newOnes.length}건, 신규 ${newOnes.length}건 추가`);
-
-  const merged = [...existing, ...newOnes].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  // 이 출처의 예전 항목만 바꾸고 다른 출처 항목은 남긴다. 같은 전시가 우선순위 높은 출처
+  // (art-map 등)에 이미 있으면 그쪽을 남긴다 (scripts/lib/merge-source.mjs).
+  const merged = mergeSource(existing, ["sac"], parsed);
+  console.log(`  -> sac 항목 ${merged.filter((e) => e.source === "sac").length}건 반영`);
   await writeFile(OUT_PATH, JSON.stringify(merged, null, 2) + "\n", "utf8");
   console.log(`총 ${merged.length}건을 ${OUT_PATH}에 저장했습니다.`);
 }

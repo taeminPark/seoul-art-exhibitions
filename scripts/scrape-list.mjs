@@ -4,6 +4,7 @@
 // 외부 라이브러리 없이 fetch + 정규식만 사용한다 (Node 18+).
 
 import { writeFile, readFile } from "node:fs/promises";
+import { mergeSource } from "./lib/merge-source.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -120,9 +121,10 @@ async function main() {
   }
   const prevReviews = new Map(previous.map((p) => [p.id, p.reviewSummary]));
 
-  const merged = [...byId.values()]
-    .map((item) => ({ ...item, reviewSummary: prevReviews.get(item.id) ?? null }))
-    .sort((a, b) => a.startDate.localeCompare(b.startDate));
+  // art-map 항목만 새로 바꾸고, 다른 출처(문화포털·예술의전당 등) 항목은 남긴다.
+  // 그 출처들은 뒤 단계 스크립트가 각자 갱신하므로, 그 스크립트가 실패해도 지난 데이터가 유지된다.
+  const artMapItems = [...byId.values()].map((item) => ({ ...item, reviewSummary: prevReviews.get(item.id) ?? null }));
+  const merged = mergeSource(previous, ["art-map"], artMapItems);
 
   await writeFile(OUT_PATH, JSON.stringify(merged, null, 2) + "\n", "utf8");
   console.log(`\n총 ${merged.length}건을 ${OUT_PATH}에 저장했습니다.`);

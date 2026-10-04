@@ -10,6 +10,7 @@
 // 사용법: node scripts/fetch-sejong.mjs
 
 import { readFile, writeFile } from "node:fs/promises";
+import { mergeSource } from "./lib/merge-source.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -40,10 +41,6 @@ function decodeEntities(str) {
 function toIsoDate(dotted) {
   const [y, m, d] = dotted.split(".").map((s) => s.trim());
   return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-}
-
-function normalizeTitle(title) {
-  return title.replace(/[《》<>〈〉[\]「」『』\s]/g, "").toLowerCase();
 }
 
 async function fetchPage(pageIndex, sdate, edate) {
@@ -139,11 +136,10 @@ async function main() {
     // 다른 수집 스크립트가 먼저 실행되지 않았으면 이 소스만으로 시작
   }
 
-  const existingTitles = new Set(existing.map((e) => normalizeTitle(e.title)));
-  const newOnes = [...byId.values()].filter((e) => !existingTitles.has(normalizeTitle(e.title)));
-  console.log(`  -> 기존 데이터와 중복 제외 ${byId.size - newOnes.length}건, 신규 ${newOnes.length}건 추가`);
-
-  const merged = [...existing, ...newOnes].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  // 이 출처의 예전 항목만 바꾸고 다른 출처 항목은 남긴다. 같은 전시가 우선순위 높은 출처
+  // (art-map 등)에 이미 있으면 그쪽을 남긴다 (scripts/lib/merge-source.mjs).
+  const merged = mergeSource(existing, ["sejong"], [...byId.values()]);
+  console.log(`  -> sejong 항목 ${merged.filter((e) => e.source === "sejong").length}건 반영`);
   await writeFile(OUT_PATH, JSON.stringify(merged, null, 2) + "\n", "utf8");
   console.log(`총 ${merged.length}건을 ${OUT_PATH}에 저장했습니다.`);
 }

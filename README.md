@@ -154,6 +154,16 @@ Content-Type: application/json
 
 리포지토리 Settings → Secrets and variables → Actions에 `CULTURE_API_KEY`(국공립 기관 갱신)를 등록해야 해당 스텝이 동작합니다.
 
+## 출처 하나가 실패해도 나머지는 갱신
+
+수집 스크립트는 `data/exhibitions.json`에서 **자기 출처의 항목만 바꾸고 다른 출처 항목은 그대로 둡니다** (`scripts/lib/merge-source.mjs`). 그래서 워크플로우의 수집 단계들은 `continue-on-error`로 하나가 실패해도 다음 단계로 넘어가고, 실패한 출처는 지난번 데이터가 그대로 남습니다 (예: 문화포털 API 서버 장애). 실패한 출처는 맨 마지막 `수집 실패 알림` 단계가 모아서 에러로 표시하므로 Actions 실행 결과는 실패로 보입니다.
+
+같은 전시가 여러 출처에 있으면 `SOURCE_PRIORITY` 순서(art-map → 문화포털 → 예술의전당 → …)에서 앞선 출처 항목을 남깁니다. 합치기 규칙 테스트:
+
+```
+npm test
+```
+
 ## 깨진 포스터 이미지 자동 점검
 
 데이터 소스(art-map, 각 미술관 사이트/API)가 이미지 호스팅 도메인을 바꾸거나 파일을 지워버리면 포스터가 깨진 채로 남을 수 있습니다. `update-data` 워크플로우 마지막 단계에서 `scripts/check-images.mjs`가 `data/exhibitions.json`의 모든 포스터 URL을 실제로 요청해보고, 깨진 게 있으면 리포지토리에 `⚠️ 깨진 포스터 이미지 감지` 이슈를 자동으로 열거나(이미 열려 있으면 최신 목록으로 갱신) 깨진 게 없으면 자동으로 닫습니다. 별도 시크릿이나 봇 등록 없이 기본 `GITHUB_TOKEN`만으로 동작합니다.

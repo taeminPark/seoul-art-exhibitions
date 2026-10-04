@@ -25,47 +25,74 @@ jobs:
           node-version: "20"
 
       - name: 전시 목록 갱신 (art-map)
+        id: scrape_artmap
+        continue-on-error: true
         run: node scripts/scrape-list.mjs
 
       - name: 국공립 기관 전시 갱신 (문화포털 API)
+        id: culture_api
+        continue-on-error: true
         env:
           CULTURE_API_KEY: ${{ secrets.CULTURE_API_KEY }}
         run: node scripts/fetch-culture-api.mjs
 
       - name: 예술의전당 전시 갱신 (대관 특별전 포함, sac.or.kr)
+        id: sac
+        continue-on-error: true
         run: node scripts/fetch-sac.mjs
 
       - name: 세종문화회관 전시 갱신 (대관 특별전 포함, sejongpac.or.kr)
+        id: sejong
+        continue-on-error: true
         run: node scripts/fetch-sejong.mjs
 
       - name: 롯데뮤지엄 현재 전시 갱신 (lottemuseum.com)
+        id: lotte
+        continue-on-error: true
         run: node scripts/fetch-lotte.mjs
 
       - name: 리움미술관 전시 갱신 (leeumhoam.org)
+        id: leeum
+        continue-on-error: true
         run: node scripts/fetch-leeum.mjs
 
       - name: 아모레퍼시픽미술관 현재 전시 갱신 (apma.amorepacific.com)
+        id: apma
+        continue-on-error: true
         run: node scripts/fetch-apma.mjs
 
       - name: 서울미술관 전시 갱신 (seoulmuseum.org)
+        id: seoulmuseum
+        continue-on-error: true
         run: node scripts/fetch-seoulmuseum.mjs
 
       - name: 대림미술관/디뮤지엄 전시 갱신 (daelimmuseum.org)
+        id: daelim
+        continue-on-error: true
         run: node scripts/fetch-daelim.mjs
 
       - name: 환기미술관/성곡미술관 전시 갱신
+        id: whanki_sungkok
+        continue-on-error: true
         run: node scripts/fetch-whanki-sungkok.mjs
 
       - name: 일민미술관 전시 갱신 (ilmin.org)
+        id: ilmin
+        continue-on-error: true
         run: node scripts/fetch-ilmin.mjs
 
       - name: 관람 후기 갱신 (네이버 블로그, NAVER API HUB)
+        id: reviews
+        continue-on-error: true
         if: ${{ env.HAS_NAVER_KEYS == 'true' }}
         env:
           NAVER_API_HUB_CLIENT_ID: ${{ secrets.NAVER_API_HUB_CLIENT_ID }}
           NAVER_API_HUB_CLIENT_SECRET: ${{ secrets.NAVER_API_HUB_CLIENT_SECRET }}
         run: node scripts/fetch-review-snippets.mjs
 
+      # 수집 단계는 하나가 실패해도 다음 단계로 넘어간다 (continue-on-error).
+      # 실패한 스크립트는 파일을 쓰기 전에 종료하므로 그 출처의 기존 전시는 그대로 남고,
+      # 나머지 출처는 정상적으로 갱신된다. 실패 여부는 맨 마지막 단계에서 다시 알린다.
       - name: 변경사항 커밋
         run: |
           git config user.name "github-actions[bot]"
@@ -101,3 +128,30 @@ jobs:
           else
             echo "깨진 이미지 없음, 열린 이슈도 없음"
           fi
+
+      - name: 수집 실패 알림
+        if: ${{ always() }}
+        env:
+          OUTCOMES: >-
+            art-map=${{ steps.scrape_artmap.outcome }}
+            문화포털API=${{ steps.culture_api.outcome }}
+            예술의전당=${{ steps.sac.outcome }}
+            세종문화회관=${{ steps.sejong.outcome }}
+            롯데뮤지엄=${{ steps.lotte.outcome }}
+            리움=${{ steps.leeum.outcome }}
+            아모레퍼시픽=${{ steps.apma.outcome }}
+            서울미술관=${{ steps.seoulmuseum.outcome }}
+            대림=${{ steps.daelim.outcome }}
+            환기성곡=${{ steps.whanki_sungkok.outcome }}
+            일민=${{ steps.ilmin.outcome }}
+            관람후기=${{ steps.reviews.outcome }}
+        run: |
+          FAILED=""
+          for pair in $OUTCOMES; do
+            if [ "${pair#*=}" = "failure" ]; then FAILED="$FAILED ${pair%%=*}"; fi
+          done
+          if [ -n "$FAILED" ]; then
+            echo "::error::수집 실패(기존 데이터 유지):$FAILED"
+            exit 1
+          fi
+          echo "모든 수집 성공"

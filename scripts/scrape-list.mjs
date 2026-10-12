@@ -2,6 +2,10 @@
 // art-map.co.kr의 내부 리스트 API(/data/new_exhibition.php)를 호출해
 // 서울 지역 전시(진행중 + 예정) 목록을 수집해 data/exhibitions.json으로 저장한다.
 // 외부 라이브러리 없이 fetch + 정규식만 사용한다 (Node 18+).
+//
+// 리스트 API에는 관람료가 없어서, 전시마다 상세 페이지(view.php) HTML의 "관람료" 칸을
+// 한 번씩 읽어 admission으로 붙인다 ('무료 전시만' 필터용). 상세 페이지를 못 읽으면
+// 지난번 값을 그대로 둔다.
 
 import { writeFile, readFile } from "node:fs/promises";
 import { mergeSource } from "./lib/merge-source.mjs";
@@ -30,6 +34,26 @@ function decodeEntities(str) {
 function toIsoDate(dotted) {
   const [y, m, d] = dotted.split(".").map((s) => s.trim());
   return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+}
+
+const ADMISSION_RE = /<th[^>]*>\s*관람료\s*<span>\|<\/span>\s*<\/th>\s*<td[^>]*>([\s\S]*?)<\/td>/;
+
+// 상세 페이지의 관람료 칸 (예: "무료", "성인 15,000원"). 비어 있으면 null.
+export function parseAdmission(html) {
+  const m = html.match(ADMISSION_RE);
+  if (!m) return null;
+  const text = decodeEntities(m[1].replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "")).replace(/\s+/g, " ").trim();
+  return text || null;
+}
+
+// 모바일 브라우저로 요청하면 관람료 칸이 없는 모바일 페이지가 오므로 데스크톱 브라우저로 요청한다.
+const DESKTOP_UA =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15";
+
+async function fetchAdmission(idx) {
+  const res = await fetch(`https://art-map.co.kr/exhibition/view.php?idx=${idx}`, { headers: { "User-Agent": DESKTOP_UA } });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseAdmission(await res.text());
 }
 
 async function fetchPage(type, start, wrap) {
@@ -120,6 +144,22 @@ async function main() {
     // 최초 실행 시 파일이 없을 수 있음
   }
   const prevReviews = new Map(previous.map((p) => [p.id, p.reviewSummary]));
+  const prevAdmission = new Map(previous.filter((p) => p.admission).map((p) => [p.id, p.admission]));
+
+  // 관람료: 상세 페이지를 하나씩 천천히 읽는다 (주 1회, 전시 수만큼).
+  console.log(`관람료 확인 중 (${byId.size}건)...`);
+  let admissionFails = 0;
+  for (const item of byId.values()) {
+    try {
+      const admission = await fetchAdmission(item.id);
+      if (admission) item.admission = admission;
+    } catch {
+      admissionFails++;
+      if (prevAdmission.has(item.id)) item.admission = prevAdmission.get(item.id);
+    }
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  if (admissionFails) console.log(`  관람료를 못 읽은 전시 ${admissionFails}건 (지난 값 유지)`);
 
   // art-map 항목만 새로 바꾸고, 다른 출처(문화포털·예술의전당 등) 항목은 남긴다.
   // 그 출처들은 뒤 단계 스크립트가 각자 갱신하므로, 그 스크립트가 실패해도 지난 데이터가 유지된다.
@@ -130,7 +170,9 @@ async function main() {
   console.log(`\n총 ${merged.length}건을 ${OUT_PATH}에 저장했습니다.`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

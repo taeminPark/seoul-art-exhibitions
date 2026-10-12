@@ -520,7 +520,7 @@ function renderListResultsBody(list) {
   const emptyMsg = S.searchQuery.trim()
     ? `'${S.searchQuery.trim()}'에 대한 검색 결과가 없습니다.`
     : S.freeOnly
-    ? "조건에 맞는 무료 전시가 없습니다. 소규모 갤러리는 관람료 정보가 없어 무료 필터에서 빠져요."
+    ? "조건에 맞는 무료 전시가 없습니다."
     : S.areaFilter
     ? "이 지역에는 조건에 맞는 전시가 없습니다."
     : S.listFilter === "upcoming"
@@ -586,7 +586,7 @@ function renderRegionPanel() {
   `;
 }
 
-// 관람료 정보가 "무료"인 전시만 (art-map 전시는 관람료 정보가 없어 무료 필터에선 빠진다)
+// 관람료 정보가 "무료"인 전시만 (관람료 정보가 없는 전시는 무료 필터에서 빠진다)
 function isFree(e) {
   return !!e.admission && /무료/.test(e.admission) && !/\d[\d,]*\s*원/.test(e.admission);
 }

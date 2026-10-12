@@ -46,3 +46,15 @@ test("시작일 순으로 정렬한다", () => {
   const out = mergeSource([ex("b", "B", "sac", "2026-12-01")], ["leeum"], [ex("a", "A", "leeum", "2026-01-01")]);
   assert.deepEqual(out.map((e) => e.id), ["a", "b"]);
 });
+
+test("같은 출처에 제목·기간이 같은 전시가 두 번 올라오면 하나만 남긴다 (후기 있는 쪽 우선)", () => {
+  const dup = (id, reviewSummary = null) => ({ ...ex(id, "《권병준: 내 마음속에 너는》", undefined, "2026-06-11"), endDate: "2027-05-16", reviewSummary });
+  const out = mergeSource([], ["art-map"], [dup("32354"), dup("32398", { posts: [{}] })]);
+  assert.deepEqual(ids(out), ["32398"]);
+});
+
+test("제목이 같아도 기간이 다르면 다른 전시로 둔다", () => {
+  const a = { ...ex("a1", "소장품전"), endDate: "2026-11-01" };
+  const b = { ...ex("a2", "소장품전", undefined, "2027-01-01"), endDate: "2027-03-01" };
+  assert.deepEqual(ids(mergeSource([], ["art-map"], [a, b])), ["a1", "a2"]);
+});

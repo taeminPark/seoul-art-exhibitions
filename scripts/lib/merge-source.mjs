@@ -30,7 +30,21 @@ const rank = (source) => {
   return i === -1 ? SOURCE_PRIORITY.length : i;
 };
 
-export function mergeSource(existing, sources, incoming) {
+// 같은 출처가 같은 전시를 두 번 올리는 경우가 있다 (art-map에 같은 전시가 id만 다르게 두 건).
+// 제목·시작일·종료일이 모두 같으면 하나만 남기고, 후기가 모인 쪽을 남긴다.
+function dedupeSameSource(items) {
+  const byKey = new Map();
+  for (const e of items) {
+    const key = `${normalizeTitle(e.title)}|${e.startDate}|${e.endDate}`;
+    const prev = byKey.get(key);
+    const reviews = (x) => x?.reviewSummary?.posts?.length ?? 0;
+    if (!prev || reviews(e) > reviews(prev)) byKey.set(key, e);
+  }
+  return [...byKey.values()];
+}
+
+export function mergeSource(existing, sources, rawIncoming) {
+  const incoming = dedupeSameSource(rawIncoming);
   const myRank = Math.min(...sources.map(rank));
   const others = existing.filter((e) => !sources.includes(sourceOf(e)));
 

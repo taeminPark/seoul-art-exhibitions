@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Museum Week</title>
 
 <link rel="manifest" href="manifest.json" />
@@ -10,7 +10,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Museum Week" />
-<meta name="theme-color" content="#e8e9e5" />
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#e8e9e5" />
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c1c1a" />
+<meta name="color-scheme" content="light dark" />
 <meta name="description" content="지금 서울에서 볼 수 있는 미술 전시" />
 <!-- 카카오톡·메시지에서 링크를 보냈을 때 보이는 미리보기 카드 -->
 <meta property="og:type" content="website" />
@@ -25,6 +27,7 @@
 </head>
 <body>
 <div id="app"></div>
+<script src="venues.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

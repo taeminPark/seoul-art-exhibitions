@@ -1,9 +1,10 @@
-const CACHE = "seoul-art-cache-v1";
+const CACHE = "seoul-art-cache-v2";
 const ASSETS = [
   "./",
   "./index.html",
   "./style.css",
   "./app.js",
+  "./venues.js",
   "./manifest.json",
   "./icon-180.png",
   "./icon-512.png",

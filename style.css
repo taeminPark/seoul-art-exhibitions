@@ -6,7 +6,7 @@
   --label: #f6f6f3;
   --ink: #1e1f1d;
   --ink-2: #5c5d59;
-  --ink-3: #8b8c87;
+  --ink-3: #676863; /* 벽(--wall) 위 4.6:1 — 작은 글씨도 WCAG AA */
   --rule: #cbccc6;
   --red-dot: #c8322b;
   --open-dot: #3d5a73;
@@ -16,18 +16,49 @@
 
   /* 벽에 건 액자의 그림자: 벽에 붙은 짧은 그림자 + 조명에서 떨어진 긴 그림자 */
   --hang: 0 1px 1px rgba(30, 31, 29, 0.12), 0 18px 28px -14px rgba(30, 31, 29, 0.45);
+  --bar: rgba(232, 233, 229, 0.86); /* 탭바·헤더의 반투명 벽 */
+  --press: rgba(30, 31, 29, 0.08);
+  --spot: transparent; /* 어두운 화면에서 포스터 위에 떨어지는 조명 */
 
   --fast: 0.09s cubic-bezier(0.2, 0.8, 0.4, 1);
   --spring: 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  color-scheme: light;
+}
+
+/* 불 꺼진 전시실 (시안 Q4 A): 먹에 가까운 따뜻한 검정 벽, 포스터 위에만 은은한 조명. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wall: #1c1c1a;
+    --label: #252522;
+    --ink: #ecebe5;
+    --ink-2: #a8a8a0;
+    --ink-3: #8f8f88;
+    --rule: #3a3a36;
+    --red-dot: #e0564d;
+    --open-dot: #8fb0cc;
+    --hang: 0 1px 1px rgba(0, 0, 0, 0.5), 0 22px 34px -14px rgba(0, 0, 0, 0.85);
+    --bar: rgba(28, 28, 26, 0.86);
+    --press: rgba(236, 235, 229, 0.1);
+    --spot: radial-gradient(ellipse 62% 52% at 50% 42%, rgba(255, 238, 210, 0.07), transparent 72%);
+    color-scheme: dark;
+  }
 }
 
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* 누르는 것(버튼·탭·카드)만 길게 눌러도 글자가 선택되지 않게 한다.
+   제목·장소·운영시간·소개 같은 내용은 복사해서 지도앱 등에 붙일 수 있어야 한다. */
+button, a, [data-action], .tabbar, .segmented, .day-sheet-header {
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
   touch-action: manipulation;
 }
+.detail-body { user-select: text; -webkit-user-select: text; }
+.detail-body button, .detail-body a.external-btn { user-select: none; -webkit-user-select: none; }
 
 html, body {
   margin: 0;
@@ -109,7 +140,7 @@ button {
   flex-shrink: 0;
 }
 .iconbtn:active, .iconbtn.pressed {
-  background: rgba(30, 31, 29, 0.08);
+  background: var(--press);
   transform: scale(0.92);
 }
 
@@ -190,6 +221,7 @@ button {
    (app.js의 스크롤 복원 로직 참고). 포스터는 그 안에서 원래 비율대로 걸린다. */
 .exh-poster-wrap {
   width: 100%;
+  background: var(--spot);
   aspect-ratio: 4 / 5;
   display: flex;
   align-items: center;
@@ -260,6 +292,9 @@ button {
   margin-top: 8px;
   font-variant-numeric: tabular-nums;
 }
+/* 아직 열지 않은 전시 (시안 Q5 B): 막대 자리를 점선으로 남겨 "시작 전"임을 모양으로 보여준다 */
+.run-upcoming .run-track { background: none; height: 0; border-top: 1px dashed var(--ink-3); }
+.run-upcoming .run-fill { width: 0 !important; top: -1px; }
 .run-upcoming .run-fill::after { background: var(--wall); border: 1px solid var(--ink-2); }
 .run-upcoming .run-note { color: var(--open-dot); }
 .run-ending .run-fill, .run-ending .run-fill::after { background: var(--red-dot); }
@@ -366,6 +401,7 @@ button {
 
 .detail-hero {
   width: 100%;
+  background: var(--spot);
   height: min(62vh, 560px);
   display: flex;
   align-items: center;
@@ -681,7 +717,7 @@ button {
   margin: 0 auto;
   display: flex;
   padding: 6px 10px calc(env(safe-area-inset-bottom, 0px) + 6px);
-  background: rgba(232, 233, 229, 0.86);
+  background: var(--bar);
   backdrop-filter: blur(20px) saturate(140%);
   -webkit-backdrop-filter: blur(20px) saturate(140%);
   border-top: 1px solid var(--rule);
@@ -756,3 +792,208 @@ button {
     background: var(--wall);
   }
 }
+
+/* ---------- 한 줄 헤더 (시안 Q1 B) ---------- */
+
+.topbar-compact {
+  display: block;
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 20px 0;
+  background: var(--bar);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+.topbar-compact h1 { font-size: 21px; line-height: 1.2; }
+.topbar-compact .sub { margin: 2px 0 0; flex: 1; min-width: 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-actions { display: flex; align-items: center; gap: 2px; margin-right: -8px; }
+.topbar-actions .iconbtn { width: 40px; height: 40px; }
+.iconbtn.pressed-on { background: var(--press); }
+.topbar-compact .search-box { margin-top: 2px; }
+.topbar-compact .segmented { margin-top: 10px; }
+.topbar-compact .segment { padding-bottom: 9px; margin-bottom: -1px; }
+.text-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  border-radius: 3px;
+  transition: background var(--fast), transform var(--fast);
+}
+.text-action svg { width: 16px; height: 16px; }
+.text-action:active { background: var(--press); transform: scale(0.97); }
+@media (prefers-reduced-transparency: reduce) {
+  .topbar-compact { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--wall); }
+}
+
+/* ---------- 동네·무료 칩 (시안 Q3 A) ---------- */
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px -20px 0;
+  padding: 0 20px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  transition: background var(--fast), color var(--fast), border-color var(--fast), transform var(--fast);
+}
+.chip:active { transform: scale(0.96); }
+.chip.on { background: var(--ink); border-color: var(--ink); color: var(--label); font-weight: 500; }
+.chip-sep { flex-shrink: 0; width: 1px; height: 18px; background: var(--rule); margin: 0 4px; }
+
+/* ---------- 모아보기 2열 (시안 Q2 A): 모든 포스터를 같은 크기 틀에 채운다 ---------- */
+
+.exh-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px 16px;
+  margin-bottom: 40px;
+}
+.grid-card { display: block; min-width: 0; cursor: pointer; }
+.grid-poster {
+  aspect-ratio: 5 / 7;
+  background: var(--label);
+  box-shadow: 0 1px 1px rgba(30, 31, 29, 0.12), 0 12px 18px -10px rgba(30, 31, 29, 0.45);
+  overflow: hidden;
+}
+.grid-poster img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform var(--fast); }
+.grid-card:active .grid-poster img { transform: scale(0.98); }
+.grid-title {
+  font-family: var(--serif);
+  font-size: 14.5px;
+  font-weight: 700;
+  line-height: 1.38;
+  margin-top: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: keep-all;
+}
+.grid-venue { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid-note { font-size: 12px; color: var(--ink-2); margin-top: 1px; font-variant-numeric: tabular-nums; }
+.grid-note-ending { color: var(--red-dot); font-weight: 600; }
+.grid-note-upcoming { color: var(--open-dot); }
+
+/* ---------- 상세: 포스터 버튼, 지도 링크, 캘린더 추가 ---------- */
+
+.detail-hero-btn { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; cursor: zoom-in; }
+.detail-hero-btn img { transition: transform var(--fast); }
+.detail-hero-btn:active img { transform: scale(0.985); }
+.map-link {
+  display: inline;
+  border-bottom: 1px solid var(--rule);
+  -webkit-touch-callout: default;
+}
+.map-link svg { display: inline-block; vertical-align: -1px; margin-left: 4px; color: var(--ink-2); }
+.map-link:active { opacity: 0.6; }
+.calendar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background var(--fast), transform var(--fast);
+}
+.calendar-btn:active { background: var(--press); transform: scale(0.99); }
+.external-btn[disabled] { opacity: 0.45; }
+
+/* ---------- 캘린더 날짜 (button) ---------- */
+
+.cal-cell { width: 100%; padding: 0; }
+.cal-cell:focus-visible { outline-offset: -2px; }
+.cal-nav .iconbtn { width: 44px; height: 44px; }
+
+/* ---------- 받은 전시 목록 (시안 Q6 A) ---------- */
+
+.received-head { padding: 8px 0 4px; }
+.received-eyebrow { font-size: 13px; color: var(--ink-2); }
+.received-title { font-family: var(--serif); font-size: 25px; line-height: 1.35; margin: 4px 0 0; word-break: keep-all; text-wrap: balance; }
+.received-note { text-align: center; font-size: 12.5px; color: var(--ink-2); margin: 10px 0 14px; }
+.received-list { border-top: 1px solid var(--rule); }
+.received-list .day-exh-row:last-child { border-bottom: 1px solid var(--rule); }
+.day-exh-note { font-size: 12px; color: var(--ink-2); margin-top: 1px; font-variant-numeric: tabular-nums; }
+.day-exh-note-ending { color: var(--red-dot); font-weight: 600; }
+.day-exh-note-upcoming { color: var(--open-dot); }
+
+/* ---------- 의견 보내기 (시안 Q7 A) ---------- */
+
+.feedback { margin: 30px 0 10px; padding-top: 22px; border-top: 1px solid var(--rule); text-align: center; }
+.feedback-lead { font-family: var(--serif); font-size: 15px; }
+.feedback-sub { font-size: 13px; color: var(--ink-2); margin-top: 3px; }
+.feedback-link {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 4px 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+  border-bottom: 2px solid var(--ink);
+}
+.feedback-link:active { opacity: 0.6; }
+
+/* ---------- 포스터 크게 보기 ---------- */
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.viewer-bg { position: absolute; inset: 0; background: #0b0b0a; }
+.viewer-img {
+  position: absolute;
+  transform-origin: 0 0;
+  will-change: transform;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+.viewer-close {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 10px);
+  right: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f2f1ec;
+  background: rgba(40, 40, 38, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: opacity 0.15s ease-out, transform var(--fast);
+}
+.viewer-close:active { transform: scale(0.92); }
+.seg-meta { margin-left: auto; align-self: center; padding-bottom: 3px; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }

@@ -34,7 +34,7 @@ let S = {
   favFilter: "ongoing", // '내 미술관' 탭 전용 (전시 탭 필터와 별개)
   searchQuery: "",
   searchOpen: false,
-  areaFilter: "", // AREAS의 key, ""면 모든 동네
+  areaFilter: "", // AREAS의 key, ""면 모든 지역
   freeOnly: false,
   viewMode: "large", // 'large' | 'grid' (모아보기)
   detailId: null,
@@ -510,9 +510,9 @@ function renderListResultsBody(list) {
   const emptyMsg = S.searchQuery.trim()
     ? `'${S.searchQuery.trim()}'에 대한 검색 결과가 없습니다.`
     : S.freeOnly
-    ? "조건에 맞는 무료 전시가 없습니다. 동네 갤러리는 관람료 정보가 없어 무료 필터에서 빠져요."
+    ? "조건에 맞는 무료 전시가 없습니다. 소규모 갤러리는 관람료 정보가 없어 무료 필터에서 빠져요."
     : S.areaFilter
-    ? "이 동네에는 조건에 맞는 전시가 없습니다."
+    ? "이 지역에는 조건에 맞는 전시가 없습니다."
     : S.listFilter === "upcoming"
     ? "예정된 전시가 아직 없습니다."
     : S.listFilter === "ongoing"
@@ -555,8 +555,8 @@ function renderListScreen() {
   `;
 }
 
-/* 동네·무료 칩 (시안 Q3 A). 동네는 하나만 고르고, 무료는 따로 켜고 끈다.
-   지금 상태 필터에 걸리는 전시가 있는 동네만 보여준다. */
+/* 지역·무료 칩 (시안 Q3 A). 지역는 하나만 고르고, 무료는 따로 켜고 끈다.
+   지금 상태 필터에 걸리는 전시가 있는 지역만 보여준다. */
 function renderAreaChips() {
   const today = todayISO();
   const base = S.exhibitions.filter((e) => e.endDate >= today && matchesStatus(e, S.listFilter, today));
@@ -564,8 +564,8 @@ function renderAreaChips() {
   const chip = (action, key, label, on) =>
     `<button class="chip ${on ? "on" : ""}" data-action="${action}" data-key="${key}" aria-pressed="${on}">${esc(label)}</button>`;
   return h`
-    <div class="chips" role="group" aria-label="동네·관람료 필터">
-      ${chip("area", "", "모든 동네", !S.areaFilter)}
+    <div class="chips" role="group" aria-label="지역·관람료 필터">
+      ${chip("area", "", "모든 지역", !S.areaFilter)}
       ${areas.map((a) => chip("area", a.key, a.label, S.areaFilter === a.key)).join("")}
       <span class="chip-sep" aria-hidden="true"></span>
       ${chip("free", "", "무료", S.freeOnly)}

@@ -403,6 +403,9 @@ button {
   width: 100%;
   background: var(--spot);
   height: min(62vh, 560px);
+  /* 카카오톡 등 인앱 브라우저는 스크롤할 때 주소창이 접히며 vh 값이 바뀌어 포스터 크기가
+     따라 변한다. 가장 작은 화면 높이(svh)로 고정한다. */
+  height: min(62svh, 560px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -503,6 +506,12 @@ button {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.review-post-date {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
 .review-post-desc {
   font-size: 13px;
   color: var(--ink-2);
@@ -592,6 +601,7 @@ button {
   max-width: 520px;
   margin: 0 auto;
   max-height: 72vh;
+  max-height: 72svh;
   display: flex;
   flex-direction: column;
   background: var(--label);
@@ -704,6 +714,8 @@ button {
 .venue-row:active { opacity: 0.6; }
 .venue-row.checked { color: var(--ink); font-weight: 600; }
 .venue-check { display: flex; color: var(--ink); }
+.venue-name { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+.venue-district { font-size: 12px; font-weight: 400; color: var(--ink-3); flex-shrink: 0; }
 
 /* ---------- bottom tab bar ---------- */
 
@@ -861,7 +873,6 @@ button {
 }
 .chip:active { transform: scale(0.96); }
 .chip.on { background: var(--ink); border-color: var(--ink); color: var(--label); font-weight: 500; }
-.chip-sep { flex-shrink: 0; width: 1px; height: 18px; background: var(--rule); margin: 0 4px; }
 
 /* ---------- 모아보기 2열 (시안 Q2 A): 모든 포스터를 같은 크기 틀에 채운다 ---------- */
 
@@ -996,4 +1007,76 @@ button {
   transition: opacity 0.15s ease-out, transform var(--fast);
 }
 .viewer-close:active { transform: scale(0.92); }
-.seg-meta { margin-left: auto; align-self: center; padding-bottom: 3px; font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+/* ---------- 지역 버튼 + 패널 ---------- */
+
+.region-btn {
+  margin-left: auto;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  margin-bottom: 6px;
+  padding: 0 11px 0 12px;
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+  white-space: nowrap;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: border-color var(--fast), color var(--fast), transform var(--fast);
+}
+.region-btn:active { transform: scale(0.96); }
+.region-btn.on { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+.region-btn[aria-expanded="true"] .region-caret { transform: rotate(180deg); }
+.region-caret { font-size: 10px; transition: transform var(--fast); }
+
+.region-panel {
+  margin: 0 -20px;
+  padding: 12px 20px 4px;
+  border-top: 1px solid var(--rule);
+  background: var(--label);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .region-panel { animation: region-in 0.2s cubic-bezier(0.23, 1, 0.32, 1); }
+  @keyframes region-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+}
+.region-panel .chips { flex-wrap: wrap; margin: 0; padding: 0; overflow: visible; }
+.free-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 14px;
+  color: var(--ink);
+}
+.switch {
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--rule);
+  transition: background 0.2s ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.switch.on { background: var(--ink); }
+.switch.on::after { transform: translateX(16px); background: var(--label); }
+
+.list-foot { text-align: center; font-size: 12px; color: var(--ink-3); padding: 4px 0 8px; font-variant-numeric: tabular-nums; }

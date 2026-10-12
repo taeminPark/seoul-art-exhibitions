@@ -34,6 +34,7 @@ let S = {
   favFilter: "ongoing", // '내 미술관' 탭 전용 (전시 탭 필터와 별개)
   searchQuery: "",
   searchOpen: false,
+  regionOpen: false, // 지역 패널 펼침 (시안: 필터 줄 오른쪽 '지역' 버튼 → 아래로 펼침)
   areaFilter: "", // AREAS의 key, ""면 모든 지역
   freeOnly: false,
   viewMode: "large", // 'large' | 'grid' (모아보기)
@@ -102,7 +103,7 @@ async function loadMeta() {
     const res = await fetch("./data/meta.json", { cache: "no-store" });
     if (!res.ok) return;
     S.updatedAt = (await res.json()).updatedAt || null;
-    const meta = app.querySelector(".seg-meta");
+    const meta = app.querySelector(".list-foot");
     if (meta) meta.textContent = updatedText();
   } catch {
     /* 날짜를 못 불러와도 목록은 그대로 보여준다 */
@@ -473,9 +474,18 @@ function renderSegmented() {
       ${LIST_FILTERS.map(
         (f) => `<button class="segment ${S.listFilter === f.key ? "active" : ""}" data-action="filter" data-filter="${f.key}">${esc(f.label)}</button>`
       ).join("")}
-      <span class="seg-meta">${esc(updatedText())}</span>
+      ${renderRegionButton()}
     </div>
+    ${S.regionOpen ? renderRegionPanel() : ""}
   `;
+}
+
+// 필터 줄 오른쪽 끝의 지역 버튼. 고른 게 있으면 그 이름을 보여준다 ("종로·광화문 · 무료 ▾").
+function renderRegionButton() {
+  const area = AREAS.find((a) => a.key === S.areaFilter);
+  const label = [area ? area.label : "지역", S.freeOnly ? "무료" : ""].filter(Boolean).join(" · ");
+  const active = !!area || S.freeOnly;
+  return `<button class="region-btn ${active ? "on" : ""}" data-action="toggle-region" aria-expanded="${S.regionOpen}" aria-controls="region-panel">${esc(label)}<span class="region-caret" aria-hidden="true">▾</span></button>`;
 }
 
 function renderResultsBody(list, emptyMsg) {
@@ -548,27 +558,30 @@ function renderListScreen() {
       rows: `${searching ? renderSearchBox() : ""}${renderSegmented()}`,
     })}
     <div class="content">
-      <div id="list-chips">${renderAreaChips()}</div>
       <div id="list-results">${renderListResultsBody(list)}</div>
+      <div class="list-foot">${esc(updatedText())}</div>
     </div>
     ${renderTabbar()}
   `;
 }
 
-/* 지역·무료 칩 (시안 Q3 A). 지역는 하나만 고르고, 무료는 따로 켜고 끈다.
+/* 지역 패널: 지역 칩은 하나만 고르고(고르면 패널이 접힌다), 무료는 따로 켜고 끄는 스위치.
    지금 상태 필터에 걸리는 전시가 있는 지역만 보여준다. */
-function renderAreaChips() {
+function renderRegionPanel() {
   const today = todayISO();
   const base = S.exhibitions.filter((e) => e.endDate >= today && matchesStatus(e, S.listFilter, today));
   const areas = AREAS.filter((a) => S.areaFilter === a.key || base.some((e) => VENUE_AREA.get(e.venueName) === a.key));
   const chip = (action, key, label, on) =>
     `<button class="chip ${on ? "on" : ""}" data-action="${action}" data-key="${key}" aria-pressed="${on}">${esc(label)}</button>`;
   return h`
-    <div class="chips" role="group" aria-label="지역·관람료 필터">
-      ${chip("area", "", "모든 지역", !S.areaFilter)}
-      ${areas.map((a) => chip("area", a.key, a.label, S.areaFilter === a.key)).join("")}
-      <span class="chip-sep" aria-hidden="true"></span>
-      ${chip("free", "", "무료", S.freeOnly)}
+    <div class="region-panel" id="region-panel">
+      <div class="chips" role="group" aria-label="지역">
+        ${chip("area", "", "모든 지역", !S.areaFilter)}
+        ${areas.map((a) => chip("area", a.key, a.label, S.areaFilter === a.key)).join("")}
+      </div>
+      <button class="free-row" data-action="free" role="switch" aria-checked="${S.freeOnly}">
+        <span>무료 전시만</span><span class="switch ${S.freeOnly ? "on" : ""}" aria-hidden="true"></span>
+      </button>
     </div>
   `;
 }
@@ -797,7 +810,7 @@ function renderVenueChecklist() {
           const checked = S.favoriteVenues.includes(name);
           return h`
             <button class="venue-row ${checked ? "checked" : ""}" data-action="toggle-venue" data-venue="${esc(name)}">
-              <span>${esc(name)}</span>
+              <span class="venue-name">${esc(name)}${VENUE_DISTRICT[name] ? `<span class="venue-district">${esc(VENUE_DISTRICT[name])}</span>` : ""}</span>
               <span class="venue-check">${checked ? ICON_CHECK : ""}</span>
             </button>
           `;
@@ -867,6 +880,7 @@ function renderDetail() {
                 <a class="review-post" href="${esc(p.link)}" target="_blank" rel="noopener">
                   <div class="review-post-title">${esc(p.title)}</div>
                   <div class="review-post-desc">${esc(p.description)}</div>
+                  ${p.postdate ? `<div class="review-post-date">${esc(p.postdate.replace(/(\d{4})(\d{2})(\d{2})/, "$1.$2.$3"))} 작성</div>` : ""}
                 </a>
               `
             )
@@ -1606,14 +1620,26 @@ app.addEventListener("click", (e) => {
       renderScreen();
       window.scrollTo(0, 0);
       break;
+    case "toggle-region":
+      S.regionOpen = !S.regionOpen;
+      renderScreen();
+      break;
     case "area":
-      S.areaFilter = S.areaFilter === el.dataset.key ? "" : el.dataset.key;
+      S.areaFilter = el.dataset.key;
+      S.regionOpen = false; // 고르면 접고 결과를 바로 보여준다
       renderScreen();
+      window.scrollTo(0, 0);
       break;
-    case "free":
+    case "free": {
+      // 스위치가 미끄러지는 게 보이도록 화면 전체를 다시 그리지 않고 스위치·버튼·결과만 바꾼다
       S.freeOnly = !S.freeOnly;
-      renderScreen();
+      el.setAttribute("aria-checked", S.freeOnly);
+      el.querySelector(".switch")?.classList.toggle("on", S.freeOnly);
+      const btn = app.querySelector(".region-btn");
+      if (btn) btn.outerHTML = renderRegionButton();
+      updateListResults();
       break;
+    }
     case "send-saved":
       sendSavedList();
       break;

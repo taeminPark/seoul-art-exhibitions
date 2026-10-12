@@ -8,8 +8,8 @@
 // 관람료·운영시간까지 표준 필드로 제공한다.
 //
 // 발급: https://www.culture.go.kr/data/openapi/openapiView.do?id=598
-//       (공공데이터포털 publicDataPk=15105037 "문화체육관광부_12개 기관 전시정보"
-//        에서 "활용신청"하면 됨, 보통 즉시 승인)
+//       (문화공공데이터광장에서 신청하면 인증키를 메일로 보내준다.
+//        공공데이터포털 publicDataPk=15105037에도 같은 데이터가 있지만 지금 키는 문화공공데이터광장 발급)
 //
 // 필요한 환경변수: CULTURE_API_KEY
 // 사용법: CULTURE_API_KEY=... node scripts/fetch-culture-api.mjs

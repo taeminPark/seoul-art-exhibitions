@@ -686,7 +686,7 @@ function renderSavedScreen() {
 
 /* ---------- 의견 보내기 (시안 Q7 A) ---------- */
 // 베타 기간 의견을 받는 구글폼 주소. 비어 있으면 문구 자체를 숨긴다.
-const FEEDBACK_URL = "";
+const FEEDBACK_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfly2YqHnW40PTyPgFghrfScgnXcDplxDsLBJqwvZssPkNgTg/viewform";
 
 function renderFeedbackFooter() {
   if (!FEEDBACK_URL) return "";

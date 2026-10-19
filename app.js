@@ -291,7 +291,17 @@ const POSTER_FALLBACK = "./poster-fallback.svg";
 function posterSrc(e) {
   return esc(e.poster || POSTER_FALLBACK);
 }
-const POSTER_ONERROR = `this.onerror=null;this.src='${POSTER_FALLBACK}'`;
+// art-map 이미지 서버(media.art-map.co.kr)가 죽으면 art-map 사이트처럼 본 서버 같은 경로로 한 번 더 시도한다.
+const ARTMAP_MEDIA = "https://media.art-map.co.kr/";
+function posterError(img) {
+  if (img.src.startsWith(ARTMAP_MEDIA)) {
+    img.src = "https://art-map.co.kr/" + img.src.slice(ARTMAP_MEDIA.length);
+    return;
+  }
+  img.onerror = null;
+  img.src = POSTER_FALLBACK;
+}
+const POSTER_ONERROR = "posterError(this)";
 
 function esc(str) {
   const d = document.createElement("div");

@@ -6,6 +6,10 @@
 // 리스트 API에는 관람료가 없어서, 전시마다 상세 페이지(view.php) HTML의 "관람료" 칸을
 // 한 번씩 읽어 admission으로 붙인다 ('무료 전시만' 필터용). 상세 페이지를 못 읽으면
 // 지난번 값을 그대로 둔다.
+//
+// 포스터도 이때 한 번씩 열어 본다. art-map 이미지 서버(media.art-map.co.kr)가 죽어 있으면
+// art-map 사이트처럼 본 서버(art-map.co.kr)의 같은 경로를 쓴다. 공유 페이지 미리보기와
+// 포스터 점검이 저장된 주소를 그대로 쓰기 때문이다.
 
 import { writeFile, readFile } from "node:fs/promises";
 import { mergeSource } from "./lib/merge-source.mjs";
@@ -54,6 +58,30 @@ async function fetchAdmission(idx) {
   const res = await fetch(`https://art-map.co.kr/exhibition/view.php?idx=${idx}`, { headers: { "User-Agent": DESKTOP_UA } });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return parseAdmission(await res.text());
+}
+
+const ARTMAP_MEDIA = "https://media.art-map.co.kr/";
+
+// 이미지 서버 주소의 본 서버 대체 주소. art-map 이미지가 아니면 null.
+export function artMapMirror(url) {
+  return url.startsWith(ARTMAP_MEDIA) ? "https://art-map.co.kr/" + url.slice(ARTMAP_MEDIA.length) : null;
+}
+
+async function opensAsImage(url) {
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": DESKTOP_UA } });
+    await res.arrayBuffer();
+    return res.ok && /^image\//i.test(res.headers.get("content-type") || "");
+  } catch {
+    return false;
+  }
+}
+
+// 원래 주소가 열리면 그대로, 안 열리고 대체 주소가 열리면 대체 주소, 둘 다 안 되면 원래 주소.
+async function pickPoster(url) {
+  const mirror = artMapMirror(url);
+  if (!mirror || (await opensAsImage(url))) return url;
+  return (await opensAsImage(mirror)) ? mirror : url;
 }
 
 async function fetchPage(type, start, wrap) {
@@ -147,9 +175,13 @@ async function main() {
   const prevAdmission = new Map(previous.filter((p) => p.admission).map((p) => [p.id, p.admission]));
 
   // 관람료: 상세 페이지를 하나씩 천천히 읽는다 (주 1회, 전시 수만큼).
-  console.log(`관람료 확인 중 (${byId.size}건)...`);
+  console.log(`관람료·포스터 확인 중 (${byId.size}건)...`);
   let admissionFails = 0;
+  let mirrored = 0;
   for (const item of byId.values()) {
+    const poster = await pickPoster(item.poster);
+    if (poster !== item.poster) mirrored++;
+    item.poster = poster;
     try {
       const admission = await fetchAdmission(item.id);
       if (admission) item.admission = admission;
@@ -160,6 +192,7 @@ async function main() {
     await new Promise((r) => setTimeout(r, 300));
   }
   if (admissionFails) console.log(`  관람료를 못 읽은 전시 ${admissionFails}건 (지난 값 유지)`);
+  if (mirrored) console.log(`  이미지 서버가 안 열려 본 서버 주소로 바꾼 포스터 ${mirrored}건`);
 
   // art-map 항목만 새로 바꾸고, 다른 출처(문화포털·예술의전당 등) 항목은 남긴다.
   // 그 출처들은 뒤 단계 스크립트가 각자 갱신하므로, 그 스크립트가 실패해도 지난 데이터가 유지된다.

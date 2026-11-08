@@ -519,6 +519,19 @@
     }
   },
   {
+    "id": "nmk-3588283",
+    "title": "분청사기·백자실 주제전시 <사계절 푸른 대나무, 도자기에 담다>",
+    "venue": "국립중앙박물관 상설전시실 3층 조각·공예관 분청사기·백자실",
+    "venueName": "국립중앙박물관",
+    "poster": "https://www.museum.go.kr/afile/previewThumbnail/fileMng_MUSEUM26062339012CK3hw?siteCode=MUSEUM",
+    "startDate": "2026-06-23",
+    "endDate": "2027-01-31",
+    "sourceUrl": "https://www.museum.go.kr/MUSEUM/contents/M0202010000.do?schM=view&menuId=current&exhiSpThemId=3588283&listType=list",
+    "status": "ongoing",
+    "source": "nmk",
+    "reviewSummary": null
+  },
+  {
     "id": "32415",
     "title": "카우스 《친구, 그리고 이웃 FRIENDS AND NEIGHBORS》",
     "venue": "스페이스K/서울",
@@ -763,6 +776,19 @@
     }
   },
   {
+    "id": "nmk-3692100",
+    "title": "아름다움을 나누는 마음-새로 맞이한 기증유물전 2",
+    "venue": "국립중앙박물관 기증 4실(상설전시관 2층 205호)",
+    "venueName": "국립중앙박물관",
+    "poster": "https://www.museum.go.kr/afile/previewThumbnail/fileMng_MUSEUM26080357214GQnxX?siteCode=MUSEUM",
+    "startDate": "2026-07-27",
+    "endDate": "2026-11-15",
+    "sourceUrl": "https://www.museum.go.kr/MUSEUM/contents/M0202010000.do?schM=view&menuId=current&exhiSpThemId=3692100&listType=list",
+    "status": "ongoing",
+    "source": "nmk",
+    "reviewSummary": null
+  },
+  {
     "id": "32789",
     "title": "2026년 한국 대표 조각가전 《조숙진: 지나가는 자리》",
     "venue": "서울시립미술관 남서울미술관/서울",
@@ -953,6 +979,19 @@
       "updatedAt": "2026-11-08T00:05:18.525Z",
       "filterVersion": 2
     }
+  },
+  {
+    "id": "nmk-3672087",
+    "title": "추사 김정희와 그의 동반자",
+    "venue": "국립중앙박물관 상설전시관 2층 서화실",
+    "venueName": "국립중앙박물관",
+    "poster": "https://www.museum.go.kr/afile/previewThumbnail/fileMng_MUSEUM26080729336L05xV?siteCode=MUSEUM",
+    "startDate": "2026-08-11",
+    "endDate": "2026-11-22",
+    "sourceUrl": "https://www.museum.go.kr/MUSEUM/contents/M0202010000.do?schM=view&menuId=current&exhiSpThemId=3672087&listType=list",
+    "status": "ongoing",
+    "source": "nmk",
+    "reviewSummary": null
   },
   {
     "id": "32797",
@@ -1169,6 +1208,19 @@
       "updatedAt": "2026-11-08T00:05:53.866Z",
       "filterVersion": 2
     }
+  },
+  {
+    "id": "pompidou-131",
+    "title": "정원 프로젝트: 새겨지는 것들",
+    "venue": "퐁피두센터 한화 63 아우돌프 가든",
+    "venueName": "퐁피두센터 한화",
+    "poster": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/08/18/1787037013695_30.jpg",
+    "startDate": "2026-09-06",
+    "endDate": "2027-03-07",
+    "sourceUrl": "https://www.centrepompidou-hanwha.kr/exhibition/detail?seq=131",
+    "status": "ongoing",
+    "source": "pompidou",
+    "reviewSummary": null
   },
   {
     "id": "32808",
@@ -1487,6 +1539,32 @@
     }
   },
   {
+    "id": "nmk-3832496",
+    "title": "천년의 봉인을 열다-돈황 불교 사경 소장품 특별공개",
+    "venue": "국립중앙박물관 상설전시관 3층 세계문화관 중앙아시아실",
+    "venueName": "국립중앙박물관",
+    "poster": "https://www.museum.go.kr/afile/previewThumbnail/fileMng_MUSEUM26102318183jVP7E?siteCode=MUSEUM",
+    "startDate": "2026-10-23",
+    "endDate": "2027-01-24",
+    "sourceUrl": "https://www.museum.go.kr/MUSEUM/contents/M0202010000.do?schM=view&menuId=current&exhiSpThemId=3832496&listType=list",
+    "status": "ongoing",
+    "source": "nmk",
+    "reviewSummary": null
+  },
+  {
+    "id": "pompidou-170",
+    "title": "AS ______ AS POSSIBLE",
+    "venue": "퐁피두센터 한화 G층/1층",
+    "venueName": "퐁피두센터 한화",
+    "poster": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/10/15/1792038357644_17.jpg",
+    "startDate": "2026-10-23",
+    "endDate": "2026-12-06",
+    "sourceUrl": "https://www.centrepompidou-hanwha.kr/exhibition/detail?seq=170",
+    "status": "ongoing",
+    "source": "pompidou",
+    "reviewSummary": null
+  },
+  {
     "id": "culture-10029836",
     "title": "장애예술 기획전 《달리·Differently·Dalí》",
     "venue": "예술의전당",
@@ -1719,6 +1797,19 @@
     "reviewSummary": null
   },
   {
+    "id": "pompidou-174",
+    "title": "샤갈, 너머의 여정",
+    "venue": "퐁피두센터 한화 1 전시실",
+    "venueName": "퐁피두센터 한화",
+    "poster": "https://www.centrepompidou-hanwha.kr/upload/exhibition/2026/10/19/1792388002059_29.jpg",
+    "startDate": "2026-11-24",
+    "endDate": "2027-03-28",
+    "sourceUrl": "https://www.centrepompidou-hanwha.kr/exhibition/detail?seq=174",
+    "status": "upcoming",
+    "source": "pompidou",
+    "reviewSummary": null
+  },
+  {
     "id": "culture-202601160002037",
     "title": "읽기의 기술",
     "venue": "국립현대미술관 서울",
@@ -1733,6 +1824,19 @@
     "ticketInfo": null,
     "description": "1970년대 인쇄 출판 분야에 한글 가로쓰기가 도입된 이후 그래픽 디자인의 변천사를 추적하는 전시다. 아날로그에서 디지털로 전환하는 환경 속에서 텍스트와 이미지의 관계를 연구해 온 디자이너의 활동상을 시대별로 재구성할 예정이다. 전시에서는 1970-80년대 사진 식자와 옵셋 인쇄 기술의 부흥기, 1980-90년대 그래픽 툴과 웹 환경으로의 이행기를 거쳐 오늘날 물질과 비물질을 넘나드는 실험적인 시도를 선보인다. 이 전시는 그래픽 디자인 실천의 흐름 속에서 기술 발전과 시각 문화의 역동적인 관계를 살피는 가운데 한국미술의 저변을 확장하려는 시도이다.",
     "source": "culture-api",
+    "reviewSummary": null
+  },
+  {
+    "id": "nmk-3763678",
+    "title": "모던 아트의 탄생 - 스위스 쿤스트하우스 취리히 소장품 특별전",
+    "venue": "국립중앙박물관 특별전시실 1",
+    "venueName": "국립중앙박물관",
+    "poster": "https://www.museum.go.kr/afile/previewThumbnail/fileMng_MUSEUM26101259287SJn06?siteCode=MUSEUM",
+    "startDate": "2026-11-27",
+    "endDate": "2027-04-18",
+    "sourceUrl": "https://www.museum.go.kr/MUSEUM/contents/M0202020000.do?schM=view&menuId=upcomming&exhiSpThemId=3763678&listType=list",
+    "status": "upcoming",
+    "source": "nmk",
     "reviewSummary": null
   },
   {
@@ -1794,6 +1898,19 @@
     "ticketInfo": null,
     "description": "한국전쟁 이후, 파리를 ‘현대예술의 수도’로 여긴 적지 않은 한국의 미술가들이 프랑스로 건너갔다. 이들은 2차 세계대전 이후 국제 미술의 중심을 두고 뉴욕과 경쟁하며 모더니즘의 영광을 되살리고자 했던 파리 미술계에서, 전 세계에서 건너온 미술가들과 교류하며 다양하고 새로운 현대미술을 경험하고 자신만의 세계를 구축해갔다. 이번 전시는 한국 미술가 최초로 1925년 파리로 건너간 이종우를 시작으로 1950-70년대 도불한 한국 미술가들의 예술세계를 입체적으로 조명한다. 전시는 낯선 장소에서 민족적 정체성을 모색하며 현대화를 추구하거나, 새로운 주제 탐구 및 매체 실험을 통해 미술의 경계를 확장한 도불(渡佛)작가들의 다양한 예술세계를 탐험하면서 이방인으로서 이들의 삶과 예술이 지닌 의미와 가치를 고찰한다.",
     "source": "culture-api",
+    "reviewSummary": null
+  },
+  {
+    "id": "nmk-3763677",
+    "title": "마리 앙투아네트 스타일",
+    "venue": "국립중앙박물관 특별전시실2",
+    "venueName": "국립중앙박물관",
+    "poster": "https://www.museum.go.kr/afile/previewThumbnail/fileMng_MUSEUM26110603273BvBer?siteCode=MUSEUM",
+    "startDate": "2026-12-18",
+    "endDate": "2027-03-31",
+    "sourceUrl": "https://www.museum.go.kr/MUSEUM/contents/M0202020000.do?schM=view&menuId=upcomming&exhiSpThemId=3763677&listType=list",
+    "status": "upcoming",
+    "source": "nmk",
     "reviewSummary": null
   }
 ]

@@ -922,6 +922,8 @@ function renderDetail() {
     "whanki",
     "sungkok",
     "ilmin",
+    "nmk",
+    "pompidou",
   ]);
   const externalLabel = HOMEPAGE_SOURCES.has(e.source) ? "홈페이지에서 자세히 보기" : "art-map에서 예매·상세정보 보기";
   const externalBtn = e.sourceUrl

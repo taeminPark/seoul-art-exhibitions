@@ -81,6 +81,16 @@ jobs:
         continue-on-error: true
         run: node scripts/fetch-ilmin.mjs
 
+      - name: 국립중앙박물관 전시 갱신 (museum.go.kr)
+        id: nmk
+        continue-on-error: true
+        run: node scripts/fetch-nmk.mjs
+
+      - name: 퐁피두센터 한화 전시 갱신 (centrepompidou-hanwha.kr)
+        id: pompidou
+        continue-on-error: true
+        run: node scripts/fetch-pompidou.mjs
+
       - name: 관람 후기 갱신 (네이버 블로그, NAVER API HUB)
         id: reviews
         continue-on-error: true
@@ -151,6 +161,8 @@ jobs:
             대림=${{ steps.daelim.outcome }}
             환기성곡=${{ steps.whanki_sungkok.outcome }}
             일민=${{ steps.ilmin.outcome }}
+            국립중앙박물관=${{ steps.nmk.outcome }}
+            퐁피두=${{ steps.pompidou.outcome }}
             관람후기=${{ steps.reviews.outcome }}
         run: |
           FAILED=""

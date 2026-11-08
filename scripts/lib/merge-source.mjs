@@ -18,6 +18,8 @@ export const SOURCE_PRIORITY = [
   "whanki",
   "sungkok",
   "ilmin",
+  "nmk",
+  "pompidou",
 ];
 
 export function normalizeTitle(title) {
